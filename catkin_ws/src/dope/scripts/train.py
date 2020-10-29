@@ -49,7 +49,7 @@ after each epoch. It will use the 8 gpus using pytorch data parallel.
 
 
 import argparse
-import configparser
+import ConfigParser
 import random
 import numpy as np
 
@@ -1145,7 +1145,7 @@ parser.add_argument('--loginterval',
 parser.add_argument('--gpuids',
     nargs='+', 
     type=int, 
-    default=[0,1], 
+    default=[0], 
     help='GPUs to use')
 
 parser.add_argument('--outf', 
@@ -1180,7 +1180,7 @@ args, remaining_argv = conf_parser.parse_known_args()
 defaults = { "option":"default" }
 
 if args.config:
-    config = configparser.SafeConfigParser()
+    config = ConfigParser.SafeConfigParser()
     config.read([args.config])
     defaults.update(dict(config.items("defaults")))
 
@@ -1328,8 +1328,7 @@ def _runnetwork(epoch, loader, train=True):
         net.eval()
 
     for batch_idx, targets in enumerate(loader):
-        
-        
+
         data = Variable(targets['img'].cuda())
         
         output_belief, output_affinities = net(data)
@@ -1349,7 +1348,7 @@ def _runnetwork(epoch, loader, train=True):
                 loss_tmp = ((l - target_belief) * (l-target_belief)).mean()
                 loss += loss_tmp
         
-	# Affinities loss
+        # Affinities loss
         for l in output_affinities: #output, each belief map layers. 
             loss_tmp = ((l - target_affinity) * (l-target_affinity)).mean()
             loss += loss_tmp 
@@ -1366,8 +1365,7 @@ def _runnetwork(epoch, loader, train=True):
 
         with open (opt.outf+namefile,'a') as file:
             s = '{}, {},{:.15f}\n'.format(
-                #epoch,batch_idx,loss.data[0]) 
-                epoch,batch_idx,loss.data)
+                epoch,batch_idx,loss.data[0]) 
             # print (s)
             file.write(s)
 
@@ -1375,22 +1373,18 @@ def _runnetwork(epoch, loader, train=True):
             if batch_idx % opt.loginterval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
                     epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data))#loss.data[0]
+                    100. * batch_idx / len(loader), loss.data[0]))
         else:
             if batch_idx % opt.loginterval == 0:
                 print('Test Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.15f}'.format(
                     epoch, batch_idx * len(data), len(loader.dataset),
-                    100. * batch_idx / len(loader), loss.data))#loss.data[0]
+                    100. * batch_idx / len(loader), loss.data[0]))
 
         # break
-#         print(nb_update_network)
-#         print(opt.nbupdates)
-#         if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
-#             print('saving after batch iteration...', end='')
-#             torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
-#             print('done')
-#             break
-        
+        if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
+            torch.save(net.state_dict(), '{}/net_{}.pth'.format(opt.outf, opt.namefile))
+            break
+
 
 for epoch in range(1, opt.epochs + 1):
 
