@@ -1,0 +1,80 @@
+topic_camera: "/camera/color/image_raw"
+topic_camera_info: "/camera/color/camera_info"
+topic_publishing: "dope"
+input_is_rectified: False   # Whether the input image is rectified (strongly suggested!)
+downscale_height: 512      # if the input image is larger than this, scale it down to this pixel height
+
+# Comment any of these lines to prevent detection / pose estimation of that object
+weights: {
+#    "rice_plate":"package://dope/weights/net_epoch_60.pth",
+#    "onion":"package://dope/weights/net_epoch_60.pth",
+    "pan_handle_handle":"package://dope/weights/pan_handle_handle_60_2.pth",
+#    "salt_plate":"package://dope/weights/net_epoch_60.pth",
+#    "carrot":"package://dope/weights/net_epoch_60.pth",
+#    "potato":"package://dope/weights/net_epoch_60.pth",
+}
+
+# Cuboid dimension in cm x,y,z
+dimensions: {
+#    "rice_plate": [105, 199.779296875, 199.98069763183594],  # Data_rice_plate
+#    "onion": [80.02130126953125, 160.0426025390625, 196.81930541992188],  # Data_onion
+    "pan_handle_handle": [300, 76, 166], # Data_pan_handle_handle
+#    "salt_plate": [59.160800933837891, 159.26710510253906, 159.26710510253906],  # Data_salt_plate
+#    "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],  # Data_carrot
+#    "potato": [88.9281005859375, 178.0166015625, 260.002197265625], # Data_potato[16.403600692749023,21.343700408935547,7.179999828338623],
+}
+
+class_ids: {
+#    "rice_plate": 1,
+#    "onion": 2,
+    "pan_handle_handle": 1,
+#    "salt_plate": 4,
+#    "carrot": 5,
+#    "potato": 6,
+}
+
+draw_colors: {
+#    "rice_plate": [13, 255, 128],  # green
+#    "onion": [255, 255, 255],  # while
+    "pan_handle_handle": [0, 104, 255],  # blue
+#    "salt_plate": [217,12, 232],  # magenta
+#    "carrot": [255, 101, 0],  # orange
+#   "potato": [232, 222, 12],  # yellow
+}
+
+# optional: provide a transform that is applied to the pose returned by DOPE
+model_transforms: {
+#    "cracker": [[ 0,  0,  1,  0],
+#                [ 0, -1,  0,  0],
+#                [ 1,  0,  0,  0],
+#                [ 0,  0,  0,  1]]
+}
+
+# optional: if you provide a mesh of the object here, a mesh marker will be
+# published for visualization in RViz
+# You can use the nvdu_ycb tool to download the meshes: https://github.com/NVIDIA/Dataset_Utilities#nvdu_ycb
+meshes: {
+#    "cracker": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/003_cracker_box/google_16k/textured.obj",
+#    "gelatin": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/009_gelatin_box/google_16k/textured.obj",
+#    "meat":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/010_potted_meat_can/google_16k/textured.obj",
+#    "mustard": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/006_mustard_bottle/google_16k/textured.obj",
+#    "soup":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/005_tomato_soup_can/google_16k/textured.obj",
+#    "sugar":   "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/004_sugar_box/google_16k/textured.obj",
+#    "bleach":  "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/021_bleach_cleanser/google_16k/textured.obj",
+}
+
+# optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
+mesh_scales: {
+#    "rice_plate": 0.01,
+#    "onion": 0.01,
+    "pan_handle_handle": 0.01,
+#    "salt_plate": 0.01,
+#    "carrot": 0.01,
+#    "potato": 0.01,
+}
+
+# Config params for DOPE
+thresh_angle: 0.5
+thresh_map: 0.01
+sigma: 3
+thresh_points: 0.1
