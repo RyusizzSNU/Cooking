@@ -249,7 +249,7 @@ class DopeNode(object):
         detection_array = Detection3DArray()
         detection_array.header = image_msg.header
 
-        activities = rospy.get_param('~activites').items()
+        activities = rospy.get_param('~activities').items()
         for i, m in enumerate(self.models):
             if not activities[i][1]:
                 continue

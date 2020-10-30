@@ -5,3 +5,5 @@
 .idea/encodings.xml
 .idea/deployment.xml
 .idea/Cooking.iml
+catkin_ws/devel/
+catkin_ws/build/

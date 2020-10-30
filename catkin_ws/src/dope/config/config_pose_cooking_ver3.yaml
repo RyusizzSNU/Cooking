@@ -1,0 +1,122 @@
+topic_camera: "/camera/color/image_raw"
+topic_camera_info: "/camera/color/camera_info"
+topic_publishing: "dope"
+input_is_rectified: False   # Whether the input image is rectified (strongly suggested!)
+downscale_height: 400      # if the input image is larger than this, scale it down to this pixel height
+
+# Comment any of these lines to prevent detection / pose estimation of that object
+weights: {
+#    "pan_handle_handle":"package://dope/weights/train_ver2/pan_handle_handle_30.pth",
+#    "knife_holder":"package://dope/weights/train_ver2/knife_holder_60.pth",
+    "carrot":"package://dope/weights/train_ver3/carrot.pth",
+#    "onion":"package://dope/weights/train_ver2/onion_30.pth",
+    "potato":"package://dope/weights/train_ver3/potato.pth",
+    "oil_bowl":"package://dope/weights/train_ver3/oil_bowl.pth",
+    "rice_bowl":"package://dope/weights/train_ver3/rice_bowl.pth",
+    "salt_bowl":"package://dope/weights/train_ver3/salt_bowl.pth",
+    "board_handle":"package://dope/weights/train_ver3/board_handle.pth",
+    "knife_handle":"package://dope/weights/train_ver3/knife_handle.pth",
+    "switch":"package://dope/weights/train_ver3/switch.pth",
+    "paddle_handle": "package://dope/weights/train_ver3/paddle_handle.pth",
+}
+
+# Cuboid dimension in cm x,y,z
+dimensions: {
+    "pan_handle_handle": [ 300, 76, 166 ], # Data_pan_handle_handle
+#    "knife_holder": [ 340, 160, 300 ],
+    "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],
+    "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
+    "potato": [ 88.9281005859375, 178.0166015625, 260.002197265625 ],
+    "rice_bowl": [ 118.32160186767578, 364.16009521484375, 319.51541137695312 ],
+    "salt_bowl": [ 49.638698577880859, 101.38829803466797, 79.934799194335938 ],
+    "oil_bowl": [ 139.64239501953125, 179.95370483398438, 119.37940216064453 ],
+    "board_handle": [ 5, 11, 10 ],
+    "knife_handle": [ 8.0422000885009766, 14.800000190734863, 8.1782999038696289 ],
+    "switch": [ 0.69999998807907104, 4.9983000755310059, 5 ],
+    "paddle_handle": [ 10.300000190734863, 7.7635998725891113, 7.9991002082824707 ],
+}
+
+class_ids: {
+    "pan_handle_handle": 1,
+#    "knife_holder": 2,
+    "carrot": 2,
+    "onion": 3,
+    "potato": 4,
+    "rice_bowl": 5,
+    "salt_bowl": 6,
+    "oil_bowl": 7,
+    "board_handle": 8,
+    "knife_handle": 9,
+    "switch": 10,
+    "paddle_handle": 11,
+}
+
+draw_colors: {
+    "pan_handle_handle": [0, 104, 255],  # blue
+#    "knife_holder": [13, 255, 128], # green
+    "carrot": [255, 255, 255], # white
+    "onion": [217, 12, 232], # magenta
+    "potato": [255, 101, 0], # orange
+    "rice_bowl": [232, 222, 12], # yellow
+    "salt_bowl": [0, 0, 0], # black
+    "oil_bowl":  [255, 0, 0], # red
+    "board_handle": [0, 255, 0], # green
+    "knife_handle": [128, 128, 0], # olive
+    "switch": [0, 255, 255], # cyan
+    "paddle_handle": [128, 128, 128], # gray
+}
+
+# optional: provide a transform that is applied to the pose returned by DOPE
+model_transforms: {
+#    "cracker": [[ 0,  0,  1,  0],
+#                [ 0, -1,  0,  0],
+#                [ 1,  0,  0,  0],
+#                [ 0,  0,  0,  1]]
+}
+
+# optional: if you provide a mesh of the object here, a mesh marker will be
+# published for visualization in RViz
+# You can use the nvdu_ycb tool to download the meshes: https://github.com/NVIDIA/Dataset_Utilities#nvdu_ycb
+meshes: {
+#    "cracker": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/003_cracker_box/google_16k/textured.obj",
+#    "gelatin": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/009_gelatin_box/google_16k/textured.obj",
+#    "meat":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/010_potted_meat_can/google_16k/textured.obj",
+#    "mustard": "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/006_mustard_bottle/google_16k/textured.obj",
+#    "soup":    "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/005_tomato_soup_can/google_16k/textured.obj",
+#    "sugar":   "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/004_sugar_box/google_16k/textured.obj",
+#    "bleach":  "file://path/to/Dataset_Utilities/nvdu/data/ycb/aligned_cm/021_bleach_cleanser/google_16k/textured.obj",
+}
+
+# optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
+mesh_scales: {
+    "pan_handle_handle": 0.01,
+    "knife_holder": 0.01,
+    "carrot": 0.01,
+    "onion": 0.01,
+    "potato": 0.01,
+    "rice_bowl": 0.01,
+    "salt_bowl": 0.01,
+    "oil_bowl":  0.01,
+    "board_handle": 0.01,
+    "knife_handle": 0.01,
+    "switch": 0.01,
+    "paddle_handle": 0.01,
+}
+
+# Config params for DOPE
+thresh_angle: 0.3
+thresh_map: 0.01
+sigma: 3
+thresh_points: 0.03
+
+activities: {
+    "carrot": False,
+    "potato": False,
+    "oil_bowl": False,
+    "rice_bowl": False,
+    "salt_bowl": False,
+    "board_handle": False,
+    "knife_handle": False,
+    "switch": False,
+    "paddle_handle": False,
+}
