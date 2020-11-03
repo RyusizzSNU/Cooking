@@ -1,9 +1,10 @@
 import urx
+import time
 
 
 def set_idle(rob, arm, vars, **args):
     """
-    move right arm to idel pose
+    move arm to idle pose
     """
     if arm == 'left':
         idle_pose = vars['left_idle']
@@ -13,11 +14,24 @@ def set_idle(rob, arm, vars, **args):
         print("wrong arm!")
         return False
     try:
-        rob.movej(idle_pose, acc, acc=args['a'], vel=args['v'], relative=False)
+        rob.movej(idle_pose, acc=args['a'], vel=args['v'], relative=False)
     except Exception as ex:
         print("Robot could not execute move (emergency stop for example), do something", ex)
         return False
     return True
+
+def set_posej(rob, pose, a, v):
+    """
+    move arm to given pose
+    """
+    try:
+        rob.movej(pose, acc=a, vel=v, relative=False)
+        time.sleep(1)
+    except Exception as ex:
+        print("Robot could not execute move (emergency stop for example), do something", ex)
+        return False
+    return True
+
 
 if __name__ == '__main__':
     rob = urx.Robot("192.168.1.109") #left : "192.168.1.66", right: "192.168.1.109"
