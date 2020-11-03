@@ -2,7 +2,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32, String
 from sensor_msgs.msg import JointState
-
+import urx
 
 class AllegroHandController(object):
     def __init__(self):
@@ -121,11 +121,15 @@ class DopeController(object):
 
 if __name__ == '__main__':
     rospy.init_node('grab_knife')
+    rob = urx.Robot("192.168.1.109") #left : "192.168.1.66"
+    v = 0.3
+    a = 0.1
     dope_confroller = DopeController()
     hand_controller = AllegroHandController()
     hand_controller.lib_cmd('home')
-
-    rospy.sleep(3)
+    init_pos = [-0.680, -0.090, 0.160, 1.004, -1.207, 3.383]
+    rob.movel(init_pos, acc=a, vel=v, relative=False)
+    rospy.sleep(1)
     pan_pose, pan_orient = dope_confroller.get_pose('knife_handle')
     print('pan_pose x, y, z', pan_pose.x, pan_pose.y, pan_pose.z)
     print('pan_orient x, y, z, w', pan_orient.x, pan_orient.y, pan_orient.z, pan_orient.w)
