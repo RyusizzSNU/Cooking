@@ -29,6 +29,7 @@ from std_msgs.msg import String
 from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
 from visualization_msgs.msg import Marker, MarkerArray
 
+from dope.msg import Points
 
 class Draw(object):
     """Drawing helper class to visualize the neural network output"""
@@ -171,6 +172,13 @@ class DopeNode(object):
                     queue_size=10
                 )
 
+            self.pub_projected = \
+                rospy.Publisher(
+                    '~projected_points',
+                    Points,
+                    queue_size=10
+                )
+
         # Start ROS publishers
         self.pub_rgb_dope_points = \
             rospy.Publisher(
@@ -308,9 +316,12 @@ class DopeNode(object):
                 # Draw the cube
                 if None not in result['projected_points']:
                     points2d = []
+                    points2d_pub = []
                     for pair in result['projected_points']:
                         points2d.append(tuple(pair))
+                        points2d_pub.extend(pair)
                     draw.draw_cube(points2d, self.draw_colors[m])
+                    self.pub_projected.publish(points2d_pub)
 
         # Publish the image with results overlaid
         rgb_points_img = CvBridge().cv2_to_imgmsg(np.array(im)[..., ::-1], "bgr8")
@@ -319,6 +330,7 @@ class DopeNode(object):
         self.pub_camera_info.publish(camera_info)
         self.pub_detections.publish(detection_array)
         self.publish_markers(detection_array)
+
 
     def publish_markers(self, detection_array):
         # Object markers

@@ -3,6 +3,21 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32, String
 from sensor_msgs.msg import JointState
 import urx
+import math
+
+def right_pose(pose):
+    """
+    Send a movel command to the robot. See URScript documentation.
+    """
+    tpose = [0, 0, 0, 0, 0, 0]  # relative
+    b = -pose[0] / math.sqrt(2) - pose[2] / math.sqrt(2)
+    c = pose[0] / math.sqrt(2) - pose[2] / math.sqrt(2)
+    a = -pose[1]
+
+    tpose[0] = a
+    tpose[1] = b
+    tpose[2] = c
+    return tpose
 
 class AllegroHandController(object):
     def __init__(self):
@@ -67,12 +82,14 @@ class DopeController(object):
         knife_handle_topic = '/dope/pose_knife_handle'
         board_handle_topic = '/dope/pose_board_handle'
         switch_topic = '/dope/pose_switch'
+        paddle_topic = '/dope/pose_paddle_handle'
 
         rospy.Subscriber(pan_handle_topic, PoseStamped, self.pan_handle_callback)
         rospy.Subscriber(oil_bowl_topic, PoseStamped, self.oil_bowl_callback)
         rospy.Subscriber(knife_handle_topic, PoseStamped, self.knife_handlel_callback)
         rospy.Subscriber(board_handle_topic, PoseStamped, self.board_handle_callback)
         rospy.Subscriber(switch_topic, PoseStamped, self.switch_callback)
+        rospy.Subscriber(paddle_topic, PoseStamped, self.paddle_handle_callback)
 
         # rospy.Subscriber('/dope/rgb_points', Image, self.dope_image_callback)
 
@@ -97,6 +114,9 @@ class DopeController(object):
     def rice_bowl_callback(self, data):
         self.rice_bowl_pose = data.pose
 
+    def paddle_handle_callback(self, data):
+        self.paddle_handle_pose = data.pose
+
 
     def get_pose(self, object_name):
         try:
@@ -114,23 +134,48 @@ class DopeController(object):
                 return self.salt_bowl_pose.position, self.salt_bowl_pose.orientation
             elif object_name == 'rice_bowl':
                 return self.rice_bowl_pose.position, self.rice_bowl_pose.orientation
+            elif object_name == 'paddle_handle':
+                return self.paddle_handle_pose.position, self.paddle_handle_pose.orientation
+
+
         except Exception as e:
             print(e)
             print('[ERROR] Object is not detected yet!!!')
             return None, None
 
-if __name__ == '__main__':
-    rospy.init_node('grab_knife')
-    rob = urx.Robot("192.168.1.109") #left : "192.168.1.66"
+def go_to_handle(rob, knife_pose, knife_orient):
     v = 0.3
     a = 0.1
-    dope_confroller = DopeController()
-    hand_controller = AllegroHandController()
-    hand_controller.lib_cmd('home')
-    init_pos = [-0.680, -0.090, 0.160, 1.004, -1.207, 3.383]
-    rob.movel(init_pos, acc=a, vel=v, relative=False)
-    rospy.sleep(1)
-    pan_pose, pan_orient = dope_confroller.get_pose('knife_handle')
-    print('pan_pose x, y, z', pan_pose.x, pan_pose.y, pan_pose.z)
-    print('pan_orient x, y, z, w', pan_orient.x, pan_orient.y, pan_orient.z, pan_orient.w)
+    # print('right_pose',right_pose([0, 0, 0, knife_orient.x, knife_orient.y, knife_orient.z]))
+    rob.movel(right_pose([-knife_pose.y, -knife_pose.x,-knife_pose.z/3, 0, 0, 0]), acc=a, vel=v, relative=True)
 
+
+    # rob.movel([0, 0, 0, knife_orient.x, knife_orient.y, knife_orient.z], acc=a, vel=v, relative=True)
+
+    return Truea
+
+if __name__ == '__main__':
+    rospy.init_node('grab_knife')
+    try:
+        rob = urx.Robot("192.168.1.109") #left : "192.168.1.66"
+        v = 0.3
+        a = 0.1
+        dope_confroller = DopeController()
+        hand_controller = AllegroHandController()
+        hand_controller.lib_cmd('home')
+        init_pos = [-0.652, -0.035, 0.179, 0.367, -1.597, -3.732]
+        # knife_orient = [-0.37384092840261085, -0.4464537731569344, 0.6221638157666863, 0.5232916730043076]
+        rob.movel(init_pos, acc=a, vel=v, relative=False)
+        rospy.sleep(10)
+        handle_pose, handle_orient = dope_confroller.get_pose('paddle_handle')
+        print('pan_pose x, y, z', handle_pose.x, handle_pose.y, handle_pose.z)
+        print('pan_orient x, y, z, w', handle_orient.x, handle_orient.y, handle_orient.z, handle_orient.w)
+
+        success = go_to_handle(rob, handle_pose, handle_orient)
+        print('go to knife', str(success))
+    except Exception as ex:
+        print("Robot could not execute move (emergency stop for example), do something", ex)
+
+    finally:
+        rob.close()
+        print('done')
