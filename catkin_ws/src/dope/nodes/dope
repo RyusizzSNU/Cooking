@@ -91,6 +91,20 @@ class Draw(object):
         self.draw_line(points[0], points[5], color)
         self.draw_line(points[1], points[4], color)
 
+    def draw_axis(self, center, rvec, tvec, mtx, dist=None):
+        """
+        Draws axis with a thick solid line.
+        """
+        axis = np.float32([[5,0,0], [0,5,0], [0,0,-5]]).reahspe(-1,3)
+        if dist is None:
+            dist = np.zeros((1,5))
+
+        points, jac = cv2.projectPoints(axis, rvec, tvec, mtx, dist)
+        center = tuple(center.ravel())
+        self.draw_line(center, tuple(points[0].ravel()), (255,0,0))
+        self.draw_line(center, tuple(points[1].ravel()), (0,255,0))
+        self.draw_line(center, tuple(points[2].ravel()), (0,0,255))
+
 
 class DopeNode(object):
     """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
@@ -321,6 +335,8 @@ class DopeNode(object):
                         points2d.append(tuple(pair))
                         points2d_pub.extend(pair)
                     draw.draw_cube(points2d, self.draw_colors[m])
+                    draw.draw_axis(points2d[0], ori, loc, camera_matrix, dist=dist_coeffs)
+                    draw.draw_dot(points2d[0], (255,255,255), 5)
                     self.pub_projected.publish(points2d_pub)
 
         # Publish the image with results overlaid
