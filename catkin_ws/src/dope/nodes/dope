@@ -28,6 +28,7 @@ from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
 from std_msgs.msg import String
 from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
 from visualization_msgs.msg import Marker, MarkerArray
+from scipy.spatial.transform import Rotation as R
 
 from dope.msg import Points
 
@@ -95,10 +96,12 @@ class Draw(object):
         """
         Draws axis with a thick solid line.
         """
-        axis = np.float32([[5,0,0], [0,5,0], [0,0,-5]]).reahspe(-1,3)
+        axis = np.float32([[100,0,0], [0,100,0], [0,0,-100]]).reshape(-1,3)
         if dist is None:
             dist = np.zeros((1,5))
 
+        rvec = np.float32(R.from_quat(rvec).as_rotvec()).reshape(-1,3)
+        tvec = np.float32(tvec).reshape(-1,3)
         points, jac = cv2.projectPoints(axis, rvec, tvec, mtx, dist)
         center = tuple(center.ravel())
         self.draw_line(center, tuple(points[0].ravel()), (255,0,0))
@@ -335,8 +338,8 @@ class DopeNode(object):
                         points2d.append(tuple(pair))
                         points2d_pub.extend(pair)
                     draw.draw_cube(points2d, self.draw_colors[m])
-                    draw.draw_axis(points2d[0], ori, loc, camera_matrix, dist=dist_coeffs)
-                    draw.draw_dot(points2d[0], (255,255,255), 5)
+                    draw.draw_axis(result['projected_points'][-1,:], ori, loc, camera_matrix, dist=dist_coeffs)
+                    draw.draw_dot(result['projected_points'][-1,:], (255,255,255), 3)
                     self.pub_projected.publish(points2d_pub)
 
         # Publish the image with results overlaid

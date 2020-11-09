@@ -11,7 +11,7 @@ from dope_reader import DopeReader
 
 '''
 Definitions:
-    L_A_B stands for an affine transformation from A to B
+    L_B_A stands for an affine transformation from A to B
     O : object
     C : camera(attached to wrist)
     W : robot wrist 
@@ -23,13 +23,13 @@ class Agent():
     L_W_C = np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]])
     # object center position relative to object pivot(in object coordinate system)
     v_center_dict = {
-        'carrot' : np.array([0, 0, 0, 1]),
-        'pan_handle_handle' : np.array([0, 0, -0.02, 1])
+        'carrot' : np.array([0.165, 0, 0, 1]),
+        'pan_handle_handle' : np.array([0, 0.165, -0.02, 1])
     }
-    # appropriate wrist position relative to object center(in wrist coordinate system) for gripping
+    # appropriate wrist position relative to object center(in object coordinate system) for gripping
     v_wrist_dict = {
-        'carrot' : np.array([0, 0, -0.165, 0]),
-        'pan_handle_handle' : np.array([0, 0, -0.165, 0])
+        'carrot' : np.array([0.165, 0, 0, 0]),
+        'pan_handle_handle' : np.array([0, 0.165, 0, 0])
     }
     # appropriate wrist orientation relative to object orientation for gripping
     r_O_W_dict = {
@@ -59,8 +59,8 @@ class Agent():
             L_B_W, np.matmul(
                 self.L_W_C, np.matmul(
                     L_C_O, self.v_center_dict[obj]
-                )
-            ) + self.v_wrist_dict[obj]
+                ) #+ self.v_wrist_dict[obj]
+            )
         )[:3]
         target_orientation = R.from_dcm(utils.to_33(np.matmul(
             L_B_W, np.matmul(

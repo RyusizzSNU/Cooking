@@ -69,7 +69,7 @@ class CuboidPNPSolver(object):
         obj_3d_points = np.array(obj_3d_points, dtype=float)
 
         valid_point_count = len(obj_2d_points)
-        print(valid_point_count, "valid points found" )
+        # print(valid_point_count, "valid points found" )
 
         # Set PNP algorithm based on OpenCV version and number of valid points
         is_points_valid = False
