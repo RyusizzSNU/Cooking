@@ -13,7 +13,7 @@ def tcp_to_affine(tcp):
     affine = R.from_rotvec(tcp[3:]).as_dcm()
     return to_44(affine, tcp[:3])
 
-def dope_to_affine(dope):
+def dope_to_affine(dope, scale=1):
     p = dope.position
     o = dope.orientation
-    return to_44(R.from_quat([o.x, o.y, o.z, o.w]).as_dcm(), np.array([p.x, p.y, p.z]) / 20)
+    return to_44(R.from_quat([o.x, o.y, o.z, o.w]).as_dcm(), np.array([p.x, p.y, p.z]) * scale)
