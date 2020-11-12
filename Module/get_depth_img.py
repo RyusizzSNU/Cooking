@@ -10,14 +10,16 @@ class RealsenseController(object):
         depth_img_topic = '/camera/depth/image_rect_raw'
         rospy.Subscriber(depth_img_topic, Image, self.depth_camera_cb)
 
-    def head_camera_cb(self, msg):
+    def depth_camera_cb(self, msg):
         self.img_msg = self.bridge.imgmsg_to_cv2(msg)
         np_img = np.asanyarray(self.img_msg)
-
-        # Show images
-        cv2.namedWindow('RealSense_depth', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('RealSense_depth', np_img)
-        cv2.waitKey(1)
+        show_mode = True
+        if show_mode:
+            print(np_img.shape)
+            # Show images
+            cv2.namedWindow('RealSense_depth', cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RealSense_depth', np_img / 100.0)
+            cv2.waitKey(1)
 
 if __name__ == '__main__':
     rospy.init_node('get_depth_img')
