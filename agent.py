@@ -20,21 +20,20 @@ Definitions:
     B : robot base   
 '''
 class Agent():
-    initial_pos = {'left' : [0.4, 0.1, -0.25], 'right' : [-0.7035, -0.0028, -0.1604]}
-    initial_rot = {'left' : [[0, 1, 0], [-math.sqrt(2) / 2, 0, math.sqrt(2) / 2], [math.sqrt(2) / 2, 0, math.sqrt(2) / 2]],
+    idle_pos = {'left' : [0.4, 0.1, -0.25], 'right' : [-0.7035, -0.0028, -0.1604]}
+    idle_rot = {'left' : [[0, 1, 0], [-math.sqrt(2) / 2, 0, math.sqrt(2) / 2], [math.sqrt(2) / 2, 0, math.sqrt(2) / 2]],
                 'right' : [[0, -1, 0], [math.sqrt(2) / 2, 0, math.sqrt(2) / 2], [-math.sqrt(2) / 2, 0, math.sqrt(2) / 2]]}
 
-    initial_joint = {'left' : [-0.3252, -4.4345, 1.2298, 5.0867, -2.2970, -2.7121],
+    idle_joint = {'left' : [-0.3252, -4.4345, 1.2298, 5.0867, -2.2970, -2.7121],
                      'right' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]}
 
-    initial_joint_side_view = {'left' : [0.2415, -2.7355, 0.8113, 3.6897, -3.8907, -1.2848]}
-    integrade_joint_for_rice_bowl = {'left' : [0.3664, -3.1741, 2.3328, 3.6704, 1.8027, -0.5058]}
-
+    idle_joint_side_view = {'left' : [0.2415, -2.7355, 0.8113, 3.6897, -3.8907, -1.2848]}
+    integrade_joint_side = {'left' : [0.3664, -3.1741, 2.3328, 3.6704, 1.8027, -0.5058]}
 
     L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]]),
             'right' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]])}
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
-    v_wrist_dict = {
+    v_O_dict = {
         'carrot' : np.array([0.165, 0, -0.03, 1]),
         'pan_handle_handle' : np.array([0, -0.17, -0.03, 1]),
         'rice_bowl' : np.array([-0.21, -0.082, 0, 1]),
@@ -69,19 +68,30 @@ class Agent():
         if side == 'left':
             self.robot['left'] = urx.Robot("192.168.1.66")
             self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'])
-            #self.gripper.close_gripper()
         if side == 'right':
             self.robot['right'] = urx.Robot("192.168.1.109")
 
-        self.robot[side].movej(self.initial_joint[side], 0.1, 0.1)
-        #self.robot[side].movej(self.initial_joint_side_view[side], 0.1, 0.1)
-        print(self.robot[side].getl())
-        print(self.robot[side].getj())
+        print('Robot tcp : ', self.robot[side].getl())
+        print('Robot joints : ', self.robot[side].getj())
+
+        self.idle(side)
+
+    def idle(self, side, side_view=False, start_closed=False, start_opened=False):
+        if side == 'left':
+            if start_closed:
+                self.gripper.close_gripper()
+            elif start_opened:
+                self.gripper.open_gripper()
+
+        if side_view:
+            self.robot[side].movej(self.initial_joint_side_view[side], 0.1, 0.1)
+        else:
+            self.robot[side].movej(self.initial_joint[side], 0.1, 0.1)
+
         if side == 'left':
             self.gripper.open_gripper()
 
     def get_target_6d_pos(self, side, obj, v_O, r_O_W):
-        # scale : 1 for handles (except for pan_handle_handle), 1/20 for others
         scale = 0.05
         if obj == 'board_handle' or obj == 'knife_handle' or obj == 'paddle_handle':
             scale = 1
@@ -89,8 +99,8 @@ class Agent():
             scale = 1.18
         L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=scale)
         L_B_W = utils.tcp_to_affine(self.robot[side].getl())
-        print(L_C_O)
-        print(L_B_W)
+        print('L_C_O : \n', L_C_O)
+        print('L_B_W : \n', L_B_W)
         target_position = np.matmul(
             L_B_W, np.matmul(
                 self.L_W_C[side], np.matmul(
@@ -112,8 +122,8 @@ class Agent():
         return np.concatenate([target_position, target_orientation])
 
     def reach(self, side, obj):
-        target_6d_pos = self.get_target_6d_pos(side, obj, self.v_wrist_dict[obj], self.r_O_W_dict[obj])
-        print(target_6d_pos)
+        target_6d_pos = self.get_target_6d_pos(side, obj, self.v_O_dict[obj], self.r_O_W_dict[obj])
+        print('target 6d pos : ', target_6d_pos)
         self.robot[side].movel(target_6d_pos, 0.1, 0.1, relative=False)
 
     def close(self):
