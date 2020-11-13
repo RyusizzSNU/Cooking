@@ -9,15 +9,14 @@ class DopeReader(object):
         self.obj_poses = {}
         self.name = name
 
-        rospy.Subscriber('/dope/pose_pan_handle_handle', PoseStamped, self.pan_handle_callback)
-        rospy.Subscriber('/dope/pose_oil_bowl', PoseStamped, self.oil_bowl_callback)
-        rospy.Subscriber('/dope/pose_carrot', PoseStamped, self.carrot_callback)
-        rospy.Subscriber('/dope/pose_knife_handle', PoseStamped, self.knife_handle_callback)
-        rospy.Subscriber('/dope/pose_paddle_handle', PoseStamped, self.paddle_handle_callback)
-
-        rospy.Subscriber('/dope/pose_rice_bowl', PoseStamped, self.rice_bowl_callback)
-        rospy.Subscriber('/dope/pose_salt_bowl', PoseStamped, self.salt_bowl_callback)
-        rospy.Subscriber('/dope/pose_board_handle', PoseStamped, self.board_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_pan_handle_handle'%name, PoseStamped, self.pan_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_oil_bowl'%name, PoseStamped, self.oil_bowl_callback)
+        rospy.Subscriber('/dope/%s/pose_carrot'%name, PoseStamped, self.carrot_callback)
+        rospy.Subscriber('/dope/%s/pose_knife_handle'%name, PoseStamped, self.knife_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_paddle_handle'%name, PoseStamped, self.paddle_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_rice_bowl'%name, PoseStamped, self.rice_bowl_callback)
+        rospy.Subscriber('/dope/%s/pose_salt_bowl'%name, PoseStamped, self.salt_bowl_callback)
+        rospy.Subscriber('/dope/%s/pose_board_handle'%name, PoseStamped, self.board_handle_callback)
         # rospy.Subscriber('/dope/rgb_points', Image, self.dope_image_callback
 
     def board_handle_callback(self, data):

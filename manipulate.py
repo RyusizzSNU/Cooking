@@ -34,10 +34,10 @@ class Agent():
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
     v_wrist_dict = {
         'carrot' : np.array([0.165, 0, -0.03, 1]),
-        'pan_handle_handle' : np.array([0, 0.17, -0.02, 1]),
-        'rice_bowl' : np.array([-0.035, -0.24, 0, 1]),
-        'oil_bowl' : np.array([-0.20, -0.03, 0, 1]),
-        'salt_bowl' : np.array([-0.18, 0, 0, 1]),
+        'pan_handle_handle' : np.array([0, -0.17, -0.03, 1]),
+        'rice_bowl' : np.array([-0.025, -0.24, 0, 1]),
+        'oil_bowl' : np.array([-0.21, -0.03, 0, 1]),
+        'salt_bowl' : np.array([-0.19, 0.01, 0, 1]),
         'board_handle' : np.array([-0.17, 0, 0, 1]),
         'knife_handle' : np.array([-0.18, 0.02, 0, 1]),
         'paddle_handle' : np.array([-0.0, 0.18, 0, 1])
@@ -45,7 +45,7 @@ class Agent():
     # appropriate wrist orientation relative to object orientation for gripping
     r_O_W_dict = {
         'carrot': np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, -1, 0], [1, 0, 0, 0], [0, 0, 0, 1]]),
+        'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'rice_bowl' : np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'oil_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'salt_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
@@ -58,7 +58,7 @@ class Agent():
         # robot
         rospy.init_node('dope_reader')
         self.robot = {}
-        self.dope_reader = {'left' : DopeReader('left'), 'right' : DopeReader('right')}
+        self.dope_reader = {'left' : DopeReader('L'), 'right' : DopeReader('R')}
         rospy.sleep(1)
 
     def ready(self, side):
@@ -104,8 +104,8 @@ class Agent():
         ))).as_rotvec()
         print(target_position, target_orientation)
         if obj == 'rice_bowl':
-            self.robot[side].movej(self.integrade_joint_for_rice_bowl[side], 0.1, 0.1)
-        self.robot[side].movel(np.concatenate([target_position, target_orientation]), 0.1, 0.1, relative=False)
+            self.robot[side].movej(self.integrade_joint_for_rice_bowl[side], 0.2, 0.2)
+        #self.robot[side].movel(np.concatenate([target_position, target_orientation]), 0.1, 0.1, relative=False)
         if side == 'left' :
             self.gripper.close_gripper()
 
@@ -117,5 +117,5 @@ if __name__ == '__main__':
     agent = Agent()
     agent.ready('right')
     time.sleep(1)
-    agent.grip('right', 'paddle_handle')
+    agent.grip('right', 'pan_handle_handle')
     agent.close()
