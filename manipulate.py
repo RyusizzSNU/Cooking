@@ -42,7 +42,8 @@ class Agent():
         'salt_bowl' : np.array([-0.19, 0.01, 0, 1]),
         'board_handle' : np.array([-0.17, 0, 0, 1]),
         'knife_handle' : np.array([-0.18, 0.02, 0, 1]),
-        'paddle_handle' : np.array([-0.0, 0.18, 0, 1])
+        'paddle_handle' : np.array([-0.0, 0.18, 0, 1]),
+        'switch' : np.array([-0.15, 0, 0, 1])
     }
     # appropriate wrist orientation relative to object orientation for gripping
     r_O_W_dict = {
@@ -53,7 +54,8 @@ class Agent():
         'salt_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'board_handle' : np.array([[0, 0, 1, 0], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]),
         'knife_handle' : np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'paddle_handle' : np.array([[-1, 0, 0, 0], [0, 0, -1, 0], [0, -1, 0, 0], [0, 0, 0, 1]])
+        'paddle_handle' : np.array([[-1, 0, 0, 0], [0, 0, -1, 0], [0, -1, 0, 0], [0, 0, 0, 1]]),
+        'switch' : np.array([[0, 0, 1, 0], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
     }
 
     def __init__(self):
@@ -83,6 +85,8 @@ class Agent():
         scale = 0.05
         if obj == 'board_handle' or obj == 'knife_handle' or obj == 'paddle_handle':
             scale = 1
+        if obj == 'switch':
+            scale = 1.18
         L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=scale)
         L_B_W = utils.tcp_to_affine(self.robot[side].getl())
         print(L_C_O)
@@ -118,8 +122,8 @@ class Agent():
 
 if __name__ == '__main__':
     agent = Agent()
-    agent.ready('right')
+    agent.ready('left')
     time.sleep(1)
-    agent.reach('right', 'pan_handle_handle')
+    agent.reach('left', 'switch')
     agent.gripper.close_gripper()
     agent.close()
