@@ -30,8 +30,10 @@ class Agent():
     idle_joint_side_view = {'left' : [0.2415, -2.7355, 0.8113, 3.6897, -3.8907, -1.2848]}
     integrade_joint_side = {'left' : [0.3664, -3.1741, 2.3328, 3.6704, 1.8027, -0.5058]}
 
+    # Camera to Wrist transformation matrix
     L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]]),
             'right' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]])}
+
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
     v_O_dict = {
         'carrot' : np.array([0.165, 0, -0.03, 1]),
@@ -64,6 +66,7 @@ class Agent():
         self.dope_reader = {'left' : DopeReader('L'), 'right' : DopeReader('R')}
         rospy.sleep(1)
 
+    # Initialize robot, and go to idle
     def ready(self, side):
         if side == 'left':
             self.robot['left'] = urx.Robot("192.168.1.66")
@@ -76,6 +79,9 @@ class Agent():
 
         self.idle(side)
 
+    # Go to idle position.
+    # If side_view is True, robot will go to side view position. Otherwise it will go to top view position.
+    # start_closed or start_opened could be given in order to prevent intermediate collision.
     def idle(self, side, side_view=False, start_closed=False, start_opened=False):
         if side == 'left':
             if start_closed:
@@ -91,6 +97,8 @@ class Agent():
         if side == 'left':
             self.gripper.open_gripper()
 
+    # This function will transform the given 6d pos(v_O, r_O_W)
+    #  from object coordinates into base coordinates
     def get_target_6d_pos(self, side, obj, v_O, r_O_W):
         scale = 0.05
         if obj == 'board_handle' or obj == 'knife_handle' or obj == 'paddle_handle':
@@ -121,6 +129,9 @@ class Agent():
         ))).as_rotvec()
         return np.concatenate([target_position, target_orientation])
 
+    # Reach the given object.
+    # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
+    # and then transformed into base coordinates with self.get_target_6d_pos.
     def reach(self, side, obj):
         target_6d_pos = self.get_target_6d_pos(side, obj, self.v_O_dict[obj], self.r_O_W_dict[obj])
         print('target 6d pos : ', target_6d_pos)
