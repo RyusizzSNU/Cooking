@@ -21,8 +21,8 @@ Definitions:
 '''
 class Agent():
     idle_pos = {'left' : [0.4, 0.1, -0.25], 'right' : [-0.7035, -0.0028, -0.1604]}
-    idle_rot = {'left' : [[0, 1, 0], [-math.sqrt(2) / 2, 0, math.sqrt(2) / 2], [math.sqrt(2) / 2, 0, math.sqrt(2) / 2]],
-                'right' : [[0, -1, 0], [math.sqrt(2) / 2, 0, math.sqrt(2) / 2], [-math.sqrt(2) / 2, 0, math.sqrt(2) / 2]]}
+    idle_rot = {'left' : [[0, 1, 0], [- 1 / math.sqrt(2), 0, 1 / math.sqrt(2)], [1 / math.sqrt(2), 0, 1 / math.sqrt(2)]],
+                'right' : [[0, -1, 0], [1 / math.sqrt(2), 0, 1 / math.sqrt(2)], [- 1 / math.sqrt(2), 0, 1 / math.sqrt(2)]]}
 
     idle_joint = {'left' : [-0.3252, -4.4345, 1.2298, 5.0867, -2.2970, -2.7121],
                      'right' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]}
@@ -33,6 +33,9 @@ class Agent():
     # Camera to Wrist transformation matrix
     L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]]),
             'right' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]])}
+
+    L_B_D = {'left' : np.array([[0, 1, 0, 0.25], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 0.2121], [- 1 / math.sqrt(2), 0, 1 / math.sqrt(2), 0.6364], [0, 0, 0, 1]]),
+             'right' : np.array([[0, -1, 0, -0.25], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 1.0323], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), -0.1838], [0, 0, 0, 1]])}
 
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
     v_O_dict = {
@@ -90,12 +93,16 @@ class Agent():
                 self.gripper.open_gripper()
 
         if side_view:
-            self.robot[side].movej(self.initial_joint_side_view[side], 0.1, 0.1)
+            self.robot[side].movej(self.idle_joint_side_view[side], 0.1, 0.1)
         else:
-            self.robot[side].movej(self.initial_joint[side], 0.1, 0.1)
+            self.robot[side].movej(self.idle_joint[side], 0.1, 0.1)
 
         if side == 'left':
             self.gripper.open_gripper()
+
+    def desk_to_base(self, side, pose):
+        pose = [pose[0], pose[1], pose[2], 1]
+        return np.matmul(self.L_B_D[side], pose)[:3]
 
     # This function will transform the given 6d pos(v_O, r_O_W)
     #  from object coordinates into base coordinates
@@ -145,6 +152,8 @@ if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
     time.sleep(1)
+    #pos = agent.desk_to_base('right', [0.8, 0.5, 0.4])
+    #agent.robot['right'].movel(np.concatenate([pos, agent.robot['right'].getl()[3:]]), 0.1, 0.1, relative=False)
     agent.reach('left', 'switch')
-    agent.gripper.close_gripper()
+    #agent.gripper.close_gripper()
     agent.close()
