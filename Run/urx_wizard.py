@@ -70,6 +70,7 @@ class URXWizard(object):
 
         self.action_queue = Queue()
 
+#rospy.Service('/ur5/movel', )
 
     def change_pose(self, pose_id):
         if 0 <= pose_id < len(self.config['pose'][self.arm]):
