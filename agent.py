@@ -39,7 +39,8 @@ class Agent():
 
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
     v_O_dict = {
-        'carrot' : np.array([0.165, 0, -0.03, 1]),
+        'carrot' : np.array([0.163, 0, -0.03, 1]),
+        'onion' : np.array([0.167, 0, 0.02, 1]),
         'pan_handle_handle' : np.array([0, -0.17, -0.03, 1]),
         'rice_bowl' : np.array([-0.21, -0.082, 0, 1]),
         'oil_bowl' : np.array([-0.21, -0.03, 0, 1]),
@@ -52,6 +53,7 @@ class Agent():
     # appropriate wrist orientation relative to object orientation for gripping
     r_O_W_dict = {
         'carrot': np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
+        'onion' : np.array([[0, 0, -1, 0], [1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 0, 1]]),
         'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'rice_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'oil_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
@@ -154,6 +156,6 @@ if __name__ == '__main__':
     time.sleep(1)
     #pos = agent.desk_to_base('right', [0.8, 0.5, 0.4])
     #agent.robot['right'].movel(np.concatenate([pos, agent.robot['right'].getl()[3:]]), 0.1, 0.1, relative=False)
-    agent.reach('left', 'switch')
-    #agent.gripper.close_gripper()
+    agent.reach('left', 'onion')
+    agent.gripper.close_gripper()
     agent.close()

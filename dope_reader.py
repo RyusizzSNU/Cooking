@@ -12,6 +12,7 @@ class DopeReader(object):
         rospy.Subscriber('/dope/%s/pose_pan_handle_handle'%name, PoseStamped, self.pan_handle_callback)
         rospy.Subscriber('/dope/%s/pose_oil_bowl'%name, PoseStamped, self.oil_bowl_callback)
         rospy.Subscriber('/dope/%s/pose_carrot'%name, PoseStamped, self.carrot_callback)
+        rospy.Subscriber('/dope/%s/pose_onion'%name, PoseStamped, self.onion_callback)
         rospy.Subscriber('/dope/%s/pose_knife_handle'%name, PoseStamped, self.knife_handle_callback)
         rospy.Subscriber('/dope/%s/pose_paddle_handle'%name, PoseStamped, self.paddle_handle_callback)
         rospy.Subscriber('/dope/%s/pose_rice_bowl'%name, PoseStamped, self.rice_bowl_callback)
@@ -25,6 +26,9 @@ class DopeReader(object):
 
     def carrot_callback(self, data):
         self.obj_poses['carrot'] = data.pose
+
+    def onion_callback(self, data):
+        self.obj_poses['onion'] = data.pose
 
     def pan_handle_callback(self, data):
         self.obj_poses['pan_handle_handle'] = data.pose
