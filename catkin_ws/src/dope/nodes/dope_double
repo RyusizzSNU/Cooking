@@ -96,7 +96,7 @@ class Draw(object):
         """
         Draws axis with a thick solid line.
         """
-        axis = np.float32([[100,0,0], [0,100,0], [0,0,-100]]).reshape(-1,3)
+        axis = np.float32([[100,0,0], [0,100,0], [0,0,100]]).reshape(-1,3)
         if dist is None:
             dist = np.zeros((1,5))
 
@@ -111,9 +111,6 @@ class Draw(object):
 class DopeDouble(object):
     def __init__(self):
         self.models = {}
-        self.dope_L = Dope(self, 'L')
-        self.dope_R = Dope(self, 'R')
-
         for model, weights_url in rospy.get_param('~weights').items():
             if self.models.get(model) is None:
                 self.models[model] = \
@@ -122,6 +119,10 @@ class DopeDouble(object):
                         resource_retriever.get_filename(weights_url, use_protocol=False)
                     )
                 self.models[model].load_net_model()
+
+
+        self.dope_L = Dope(self, 'L')
+        self.dope_R = Dope(self, 'R')
 
 class Dope(object):
     """ROS node that listens to image topic, runs DOPE, and publishes DOPE results"""
@@ -140,8 +141,8 @@ class Dope(object):
         self.cv_bridge = CvBridge()
         self.prev_num_detections = 0
 
-        self.input_is_rectified = self.get_param_w_direction('~input_is_rectified', True)
-        self.downscale_height = self.get_param_w_direction('~downscale_height', 500)
+        self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
+        self.downscale_height = rospy.get_param('~downscale_height', 500)
 
         self.config_detect = lambda: None
         self.config_detect.mask_edges = 1
@@ -149,65 +150,65 @@ class Dope(object):
         self.config_detect.vertex = 1
         self.config_detect.threshold = 0.5
         self.config_detect.softmax = 1000
-        self.config_detect.thresh_angle = self.get_param_w_direction('~thresh_angle', 0.5)
-        self.config_detect.thresh_map = self.get_param_w_direction('~thresh_map', 0.01)
-        self.config_detect.sigma = self.get_param_w_direction('~sigma', 3)
-        self.config_detect.thresh_points = self.get_param_w_direction("~thresh_points", 0.1)
+        self.config_detect.thresh_angle = rospy.get_param('~thresh_angle', 0.5)
+        self.config_detect.thresh_map = rospy.get_param('~thresh_map', 0.01)
+        self.config_detect.sigma = rospy.get_param('~sigma', 3)
+        self.config_detect.thresh_points = rospy.get_param("~thresh_points", 0.1)
 
         # For each object to detect, load network model, create PNP solver, and start ROS publishers
-        for model, weights_url in self.get_param_w_direction('~weights').items():
-            # if DopeNode.models.get(model) is None:
-            #     DopeNode.models[model] = \
+        for model, weights_url in rospy.get_param('~weights').items():
+            # if self.parent.models.get(model) is None:
+            #     self.parent.models[model] = \
             #         ModelData(
             #             model,
             #             resource_retriever.get_filename(weights_url, use_protocol=False)
             #         )
-            #     DopeNode.models[model].load_net_model()
+            #     self.parent.models[model].load_net_model()
 
             try:
-                M = np.array(self.get_param_w_direction('~model_transforms')[model], dtype='float64')
+                M = np.array(rospy.get_param('~model_transforms')[model], dtype='float64')
                 self.model_transforms[model] = tf.transformations.quaternion_from_matrix(M)
             except KeyError:
                 self.model_transforms[model] = np.array([0.0, 0.0, 0.0, 1.0], dtype='float64')
 
             try:
-                self.meshes[model] = self.get_param_w_direction('~meshes')[model]
+                self.meshes[model] = rospy.get_param('~meshes')[model]
             except KeyError:
                 pass
 
             try:
-                self.mesh_scales[model] = self.get_param_w_direction('~mesh_scales')[model]
+                self.mesh_scales[model] = rospy.get_param('~mesh_scales')[model]
             except KeyError:
                 self.mesh_scales[model] = 1.0
             try:
-                self.draw_colors[model] = tuple(self.get_param_w_direction("~draw_colors")[model])
+                self.draw_colors[model] = tuple(rospy.get_param("~draw_colors")[model])
             except:
                 self.draw_colors[model] = (np.random.randint(0,255),np.random.randint(0,255),np.random.randint(0,255))
 
-            self.dimensions[model] = tuple(self.get_param_w_direction("~dimensions")[model])
-            self.class_ids[model] = self.get_param_w_direction("~class_ids")[model]
+            self.dimensions[model] = tuple(rospy.get_param("~dimensions")[model])
+            self.class_ids[model] = rospy.get_param("~class_ids")[model]
 
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
-                    cuboid3d=Cuboid3d(self.get_param_w_direction('~dimensions')[model])
+                    cuboid3d=Cuboid3d(rospy.get_param('~dimensions')[model])
                 )
             self.pubs[model] = \
                 rospy.Publisher(
-                    '{}/pose_{}'.format(self.get_param_w_direction('~topic_publishing'), model),
+                    '{}/{}/pose_{}'.format(rospy.get_param('~topic_publishing'), self.direction, model),
                     PoseStamped,
                     queue_size=10
                 )
             self.pub_dimension[model] = \
                 rospy.Publisher(
-                    '{}/dimension_{}'.format(self.get_param_w_direction('~topic_publishing'), model),
+                    '{}/{}/dimension_{}'.format(rospy.get_param('~topic_publishing'), self.direction, model),
                     String,
                     queue_size=10
                 )
 
             self.pub_projected = \
                 rospy.Publisher(
-                    '~projected_points',
+                    '{}/{}/projected_points_{}'.format(rospy.get_param('~topic_publishing'), self.direction, model),
                     Points,
                     queue_size=10
                 )
@@ -215,42 +216,42 @@ class Dope(object):
         # Start ROS publishers
         self.pub_rgb_dope_points = \
             rospy.Publisher(
-                self.get_param_w_direction('~topic_publishing') + "/rgb_points",
+                '{}/{}/rgb_points'.format(rospy.get_param('~topic_publishing'), self.direction),
                 ImageSensor_msg,
                 queue_size=10
             )
         self.pub_camera_info = \
             rospy.Publisher(
-                self.get_param_w_direction('~topic_publishing') + "/camera_info",
+                '{}/{}/camera_info'.format(rospy.get_param('~topic_publishing'), self.direction),
                 CameraInfo,
                 queue_size=10
             )
         self.pub_detections = \
             rospy.Publisher(
-                '~detected_objects',
+                '{}/{}/detected_objects'.format(rospy.get_param('~topic_publishing'), self.direction),
                 Detection3DArray,
                 queue_size=10
             )
         self.pub_markers = \
             rospy.Publisher(
-                '~markers',
+                '{}/{}/markers'.format(rospy.get_param('~topic_publishing'), self.direction),
                 MarkerArray,
                 queue_size=10
             )
 
         # Start ROS subscriber
         image_sub = message_filters.Subscriber(
-            self.get_param_w_direction('~topic_camera'),
+            rospy.get_param('~topic_camera_' + self.direction),
             ImageSensor_msg
         )
         info_sub = message_filters.Subscriber(
-            self.get_param_w_direction('~topic_camera_info'),
+            rospy.get_param('~topic_camera_info_' + self.direction),
             CameraInfo
         )
         ts = message_filters.TimeSynchronizer([image_sub, info_sub], 1)
         ts.registerCallback(self.image_callback)
 
-        print("Running DOPE...  (Listening to camera topic: '{}')".format(self.get_param_w_direction('~topic_camera')))
+        print("Running DOPE...  (Listening to camera topic: '{}')".format(rospy.get_param('~topic_camera_' + self.direction)))
         print("Ctrl-C to stop")
 
     def get_param_w_direction(self, name, default=None):
@@ -286,7 +287,7 @@ class Dope(object):
             camera_matrix[:2] *= scaling_factor
             img = cv2.resize(img, (int(scaling_factor * width), int(scaling_factor * height)))
 
-        for m in DopeNode.models:
+        for m in self.parent.models:
             self.pnp_solvers[m].set_camera_intrinsic_matrix(camera_matrix)
             self.pnp_solvers[m].set_dist_coeffs(dist_coeffs)
 
@@ -298,13 +299,13 @@ class Dope(object):
         detection_array = Detection3DArray()
         detection_array.header = image_msg.header
 
-        activities = self.get_param_w_direction('~activities').items()
-        for i, m in enumerate(DopeNode.models):
+        activities = rospy.get_param('~activities').items()
+        for i, m in enumerate(self.parent.models):
             if not activities[i][1]:
                 continue
             # Detect object
             results = ObjectDetector.detect_object_in_image(
-                DopeNode.models[m].net,
+                self.parent.models[m].net,
                 self.pnp_solvers[m],
                 img,
                 self.config_detect
@@ -463,10 +464,8 @@ def main():
     """Main routine to run DOPE"""
 
     # Initialize ROS node
-    rospy.init_node('dope_L')
-    DopeNode()
-    rospy.init_node('dope_R')
-    DopeNode()
+    rospy.init_node('dope')
+    DopeDouble()
 
     try:
         rospy.spin()

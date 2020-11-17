@@ -96,7 +96,7 @@ class Draw(object):
         """
         Draws axis with a thick solid line.
         """
-        axis = np.float32([[100,0,0], [0,100,0], [0,0,-100]]).reshape(-1,3)
+        axis = np.float32([[100,0,0], [0,100,0], [0,0,100]]).reshape(-1,3)
         if dist is None:
             dist = np.zeros((1,5))
 
@@ -104,9 +104,9 @@ class Draw(object):
         tvec = np.float32(tvec).reshape(-1,3)
         points, jac = cv2.projectPoints(axis, rvec, tvec, mtx, dist)
         center = tuple(center.ravel())
-        self.draw_line(center, tuple(points[0].ravel()), (255,0,0))
-        self.draw_line(center, tuple(points[1].ravel()), (0,255,0))
-        self.draw_line(center, tuple(points[2].ravel()), (0,0,255))
+        self.draw_line(center, tuple(points[0].ravel()), (255,0,0), line_width=4)
+        self.draw_line(center, tuple(points[1].ravel()), (0,255,0), line_width=4)
+        self.draw_line(center, tuple(points[2].ravel()), (0,0,255), line_width=4)
 
 
 class DopeNode(object):
@@ -339,7 +339,7 @@ class DopeNode(object):
                         points2d_pub.extend(pair)
                     draw.draw_cube(points2d, self.draw_colors[m])
                     draw.draw_axis(result['projected_points'][-1,:], ori, loc, camera_matrix, dist=dist_coeffs)
-                    draw.draw_dot(result['projected_points'][-1,:], (255,255,255), 3)
+                    draw.draw_dot(result['projected_points'][-1,:], (255,255,255), 1)
                     self.pub_projected.publish(points2d_pub)
 
         # Publish the image with results overlaid

@@ -1,7 +1,7 @@
-topic_camera_L: "/cam_1/color/image_raw"
-topic_camera_R: "/cam_2/color/image_raw"
-topic_camera_info_L: "/cam_1/color/camera_info"
-topic_camera_info_R: "/cam_2/color/camera_info"
+topic_camera_L: "/cam_L/color/image_raw"
+topic_camera_R: "/cam_R/color/image_raw"
+topic_camera_info_L: "/cam_L/color/camera_info"
+topic_camera_info_R: "/cam_R/color/camera_info"
 topic_publishing: "dope"
 input_is_rectified: True   # Whether the input image is rectified (strongly suggested!)
 downscale_height: 400      # if the input image is larger than this, scale it down to this pixel height
