@@ -28,6 +28,8 @@ class Agent():
                      'right' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]}
 
     idle_joint_side_view = {'left' : [0.2415, -2.7355, 0.8113, 3.6897, -3.8907, -1.2848]}
+    idle_joint_side_view2 = {'left' : [0.5178, -3.2067, 1.4637, 3.7682, -3.9780, -0.9182]}
+
     integrade_joint_side = {'left' : [0.3664, -3.1741, 2.3328, 3.6704, 1.8027, -0.5058]}
 
     # Camera to Wrist transformation matrix
@@ -39,8 +41,8 @@ class Agent():
 
     # appropriate wrist position relative to object pivot(in object coordinate system) for gripping
     v_O_dict = {
-        'carrot' : np.array([0.163, 0, -0.03, 1]),
-        'onion' : np.array([0.167, 0, 0.02, 1]),
+        'carrot' : np.array([0.165, 0, -0.06, 1]),
+        'onion' : np.array([0.192, 0, -0.035, 1]),
         'pan_handle_handle' : np.array([0, -0.17, -0.03, 1]),
         'rice_bowl' : np.array([-0.21, -0.082, 0, 1]),
         'oil_bowl' : np.array([-0.21, -0.03, 0, 1]),
@@ -48,12 +50,12 @@ class Agent():
         'board_handle' : np.array([-0.17, 0, 0, 1]),
         'knife_handle' : np.array([-0.18, 0.02, 0, 1]),
         'paddle_handle' : np.array([-0.0, 0.18, 0, 1]),
-        'switch' : np.array([-0.15, 0, 0, 1])
+        'switch' : np.array([-0.17, 0, 0, 1])
     }
     # appropriate wrist orientation relative to object orientation for gripping
     r_O_W_dict = {
         'carrot': np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'onion' : np.array([[0, 0, -1, 0], [1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 0, 1]]),
+        'onion' : np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
         'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'rice_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
         'oil_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
@@ -95,7 +97,7 @@ class Agent():
                 self.gripper.open_gripper()
 
         if side_view:
-            self.robot[side].movej(self.idle_joint_side_view[side], 0.1, 0.1)
+            self.robot[side].movej(self.idle_joint_side_view2[side], 0.1, 0.1)
         else:
             self.robot[side].movej(self.idle_joint[side], 0.1, 0.1)
 
@@ -115,6 +117,15 @@ class Agent():
         if obj == 'switch':
             scale = 1.18
         L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=scale)
+        print(L_C_O)
+        p_C_O = L_C_O[:, 3]
+        if obj == 'carrot' or obj == 'onion':
+            L_C_O = self.align_axis(R.from_dcm(utils.to_33(L_C_O)), 0, [0, 0.5, -math.sqrt(3) / 2]).as_dcm()
+            L_C_O = utils.to_44(L_C_O, p_C_O)
+        if obj == 'switch':
+            L_C_O = self.align_axis(R.from_dcm(utils.to_33(L_C_O)), 0, [0, 0, 1]).as_dcm()
+            L_C_O = utils.to_44(L_C_O, p_C_O)
+
         L_B_W = utils.tcp_to_affine(self.robot[side].getl())
         print('L_C_O : \n', L_C_O)
         print('L_B_W : \n', L_B_W)
@@ -136,7 +147,14 @@ class Agent():
                 )
             )
         ))).as_rotvec()
+
         return np.concatenate([target_position, target_orientation])
+
+    def align_axis(self, r, from_axis, to_axis):
+        z = R.as_dcm(r)[:, from_axis]
+        cross_product = np.cross(z, to_axis)
+        a = R.from_rotvec(cross_product) * r
+        return a
 
     # Reach the given object.
     # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
