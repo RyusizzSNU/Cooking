@@ -79,7 +79,21 @@ Launch realsense camera input and dope inference nodes.
 ```
 roslaunch realsense2_camera rs_camera.launch
 roslaunch dope dope.launch config:=/home/tidy/catkin_ws/src/dope/config/my_config_cooking.yaml`
-``` 
+```
+
+Launch dual realsense camera input
+(left)
+```
+roslaunch realsense2_camera rs_camera.launch camera:=cam_L serial_no:=843112073636 filters:=spatial,temporal
+```
+(right)
+```
+roslaunch realsense2_camera rs_camera.launch camera:=cam_R serial_no:=021222071327 filters:=spatial,temporal
+```
+(dope)
+```
+roslaunch dope dope_double.launch config:=/home/tidy/Cooking/catkin_ws/src/dope/config/config_pose_cooking_ver4.yaml
+```
 
 To visualize the dope, see the rviz or image_view
 
