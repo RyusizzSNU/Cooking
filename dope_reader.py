@@ -63,7 +63,7 @@ class DopeReader(object):
         p, o = data.pose.position, data.pose.orientation
         self.obj_poses['switch'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
 
-    def get_obj_pos(self, obj, interval=0.1, num_samples=50):
+    def get_obj_pos(self, obj, interval=0.1, num_samples=10):
         if not obj in self.obj_poses:
             return None
         poses = []
