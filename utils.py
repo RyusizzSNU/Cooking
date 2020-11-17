@@ -14,6 +14,4 @@ def tcp_to_affine(tcp):
     return to_44(affine, tcp[:3])
 
 def dope_to_affine(dope, scale=1):
-    p = dope.position
-    o = dope.orientation
-    return to_44(R.from_quat([o.x, o.y, o.z, o.w]).as_dcm(), np.array([p.x, p.y, p.z]) * scale)
+    return to_44(R.from_quat(dope[3:7]).as_dcm(), np.array(dope[:3]) * scale)
