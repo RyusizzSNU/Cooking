@@ -84,8 +84,6 @@ class Agent():
         print('Robot tcp : ', self.robot[side].getl())
         print('Robot joints : ', self.robot[side].getj())
 
-        self.idle(side)
-
     # Go to idle position.
     # If side_view is True, robot will go to side view position. Otherwise it will go to top view position.
     # start_closed or start_opened could be given in order to prevent intermediate collision.
@@ -171,6 +169,7 @@ class Agent():
 if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
+    agent.idle('left')
     time.sleep(1)
     #pos = agent.desk_to_base('right', [0.8, 0.5, 0.4])
     #agent.robot['right'].movel(np.concatenate([pos, agent.robot['right'].getl()[3:]]), 0.1, 0.1, relative=False)
