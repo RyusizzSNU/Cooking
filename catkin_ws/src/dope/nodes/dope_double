@@ -299,7 +299,7 @@ class Dope(object):
         detection_array = Detection3DArray()
         detection_array.header = image_msg.header
 
-        activities = rospy.get_param('{}/{}/activities'.format(rospy.get_param('~topic_publishing'), self.direction)).items()
+        activities = rospy.get_param('{}/activities/{}'.format(rospy.get_param('~topic_publishing'), self.direction)).items()
         for i, m in enumerate(self.parent.models):
             if not activities[i][1]:
                 continue
