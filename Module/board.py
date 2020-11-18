@@ -4,7 +4,7 @@ from agent import Agent
 
 agent = Agent()
 agent.ready('left')
-agent.idle('left', side_view=True, start_closed=True)
+agent.idle('left', view='lateral', start_closed=True)
 
 # Reach and grip board handle
 agent.reach('left', 'board_handle')

@@ -21,10 +21,16 @@ Definitions:
     D : desk 
 '''
 class Agent():
-    idle_joint = {'left' : [-0.3813, -4.0254, 1.2768, 4.6921, -2.2541, -2.6285],
-                    'right' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]}
-
-    idle_joint_side_view = {'left' : [0.5051, -3.0969, 1.5315, 3.5800, -4.0450, -0.9177]}
+    idle_joint = {
+        'left' : {
+            'top' : [-0.3813, -4.0254, 1.2768, 4.6921, -2.2541, -2.6285],
+            'lateral' : [0.5051, -3.0969, 1.5315, 3.5800, -4.0450, -0.9177],
+            'top2' : [0.0577, -4.5743, 1.4047, 4.7180, -2.3311, -3.2124]
+        },
+        'right' : {
+            'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]
+        }
+    }
 
     # Camera to Wrist transformation matrix
     L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]]),
@@ -82,20 +88,17 @@ class Agent():
         print 'Robot tcp:', np.array(self.robot[side].getl())
         print 'Robot joints:', np.array(self.robot[side].getj())
 
-    # Go to idle position.
-    # If side_view is True, robot will go to side view position. Otherwise it will go to top view position.
+    # side: str(either 'left' or 'right', view: str('top', 'lateral', ...), start_closed: bool, start_opened: bool
+    # Send robot to an idle position, with given view.
     # start_closed or start_opened could be given in order to prevent intermediate collision.
-    def idle(self, side, side_view=False, start_closed=False, start_opened=False):
+    def idle(self, side, view='top', start_closed=False, start_opened=False):
         if side == 'left':
             if start_closed:
                 self.gripper.close_gripper()
             elif start_opened:
                 self.gripper.open_gripper()
 
-        if side_view:
-            self.robot[side].movej(self.idle_joint_side_view[side], 0.1, 0.1)
-        else:
-            self.robot[side].movej(self.idle_joint[side], 0.1, 0.1)
+        self.robot[side].movej(self.idle_joint[side][view], 0.1, 0.1)
 
         if side == 'left':
             self.gripper.open_gripper()
@@ -218,8 +221,8 @@ class Agent():
 if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
-    agent.idle('left', side_view=False, start_closed=True)
-    time.sleep(1)
-    agent.reach('left', 'rice_bowl')
-    agent.close_gripper()
+    #agent.idle('left', side_view=False, start_closed=True)
+    #time.sleep(1)
+    #agent.reach('left', 'rice_bowl')
+    #agent.close_gripper()
     agent.close()

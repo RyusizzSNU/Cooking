@@ -6,7 +6,7 @@ obj = 'onion'
 
 agent = Agent()
 agent.ready('left')
-agent.idle('left', side_view=False, start_closed=True)
+agent.idle('left', view='top', start_closed=True)
 
 # Reach and grip the food
 agent.reach('left', obj, align_axis_from=0, align_axis_to=[0, 0.5, -math.sqrt(3) / 2])
