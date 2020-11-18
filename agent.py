@@ -33,38 +33,42 @@ class Agent():
     L_B_D = {'left' : np.array([[0, 1, 0, 0.25], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 0.2121], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 0.6364], [0, 0, 0, 1]]),
              'right' : np.array([[0, -1, 0, -0.25], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 1.0323], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), -0.1838], [0, 0, 0, 1]])}
 
-    # Appropriate wrist position relative to object pivot(in object coordinate system) for gripping
-    v_O_dict = {
-        'carrot' : np.array([0.185, 0, -0.035, 1]),
-        'onion' : np.array([0.183, 0, -0.035, 1]),
-        'pan_handle_handle' : np.array([0, -0.17, -0.03, 1]),
-        'rice_bowl' : np.array([-0.19, -0.09, 0, 1]),
-        'oil_bowl' : np.array([-0.21, -0.03, 0, 1]),
-        'salt_bowl' : np.array([-0.203, 0, 0, 1]),
-        'board_handle' : np.array([-0.14, 0, 0, 1]),
-        'knife_handle' : np.array([-0.18, 0.02, 0, 1]),
-        'paddle_handle' : np.array([-0.0, 0.18, 0, 1]),
-        'switch' : np.array([-0.157, 0, 0, 1])
+    objects = ['carrot', 'onion', 'oil_bowl', 'rice_bowl', 'salt_bowl',
+               'board_handle', 'knife_handle', 'paddle_handle', 'pan_handle_handle', 'switch']
+
+    # Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping
+    L_O_W_dict = {
+        'carrot': np.array([[0, 0, -1, 0.185], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]]),
+        'onion' : np.array([[0, 0, -1, 0.183], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]]),
+        'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, -0.17], [-1, 0, 0, -0.03], [0, 0, 0, 1]]),
+        'rice_bowl' : np.array([[0, 0, 1, -0.19], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]]),
+        'oil_bowl' : np.array([[0, 0, 1, -0.21], [0, 1, 0, -0.03], [-1, 0, 0, 0], [0, 0, 0, 1]]),
+        'salt_bowl' : np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
+        'board_handle' : np.array([[0, 0, 1, -0.14], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]),
+        'knife_handle' : np.array([[0, 0, 1, -0.18], [1, 0, 0, 0.02], [0, 1, 0, 0], [0, 0, 0, 1]]),
+        'paddle_handle' : np.array([[-1, 0, 0, 0], [0, 0, -1, 0.18], [0, -1, 0, 0], [0, 0, 0, 1]]),
+        'switch' : np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
     }
-    # Appropriate wrist orientation relative to object orientation for gripping
-    r_O_W_dict = {
-        'carrot': np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'onion' : np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'rice_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'oil_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'salt_bowl' : np.array([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'board_handle' : np.array([[0, 0, 1, 0], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]),
-        'knife_handle' : np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'paddle_handle' : np.array([[-1, 0, 0, 0], [0, 0, -1, 0], [0, -1, 0, 0], [0, 0, 0, 1]]),
-        'switch' : np.array([[0, 0, 1, 0], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+
+    dope_scale_dict = {
+        'board_handle' : 1,
+        'paddle_handle' : 1,
+        'knife_handle' : 1,
+        'switch' : 1.18,
+        'others' : 0.05
     }
 
     def __init__(self):
         # robot
+        np.set_printoptions(precision=4)
         rospy.init_node('dope_reader')
         self.robot = {}
         self.dope_reader = {'left' : DopeReader('L'), 'right' : DopeReader('R')}
+
+        for obj in self.objects:
+            if obj not in self.dope_scale_dict:
+                self.dope_scale_dict[obj] = self.dope_scale_dict['others']
+
         rospy.sleep(1)
 
     # Initialize robot, and go to idle
@@ -75,8 +79,8 @@ class Agent():
         if side == 'right':
             self.robot['right'] = urx.Robot("192.168.1.109")
 
-        print('Robot tcp : ', self.robot[side].getl())
-        print('Robot joints : ', self.robot[side].getj())
+        print 'Robot tcp:', np.array(self.robot[side].getl())
+        print 'Robot joints:', np.array(self.robot[side].getj())
 
     # Go to idle position.
     # If side_view is True, robot will go to side view position. Otherwise it will go to top view position.
@@ -98,42 +102,26 @@ class Agent():
 
     # This function will transform the given 6d pos(v_O, r_O_W)
     # from object coordinates into base coordinates
-    def get_target_6d_pos(self, side, obj, v_O, r_O_W):
-        scale = 0.05
-        if obj == 'board_handle' or obj == 'knife_handle' or obj == 'paddle_handle':
-            scale = 1
-        if obj == 'switch':
-            scale = 1.18
-        L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=scale)
-        print('dope L_C_O : \n', L_C_O)
-        p_C_O = L_C_O[:, 3]
-        if obj == 'carrot' or obj == 'onion':
-            L_C_O = self.align_axis(R.from_dcm(utils.to_33(L_C_O)), 0, [0, 0.5, -math.sqrt(3) / 2]).as_dcm()
-            L_C_O = utils.to_44(L_C_O, p_C_O)
-        if obj == 'switch' or 'bowl' in obj:
-            L_C_O = self.align_axis(R.from_dcm(utils.to_33(L_C_O)), 0, [0, 0, 1]).as_dcm()
-            L_C_O = utils.to_44(L_C_O, p_C_O)
+    # For align_axis_from and align_axis_to, see the comments at Agent.align_axis function.
+    def get_target_6d_pos(self, side, obj, L_O_W, align_axis_from=None, align_axis_to=None):
+        L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=self.dope_scale_dict[obj])
+        print 'dope L_C_O:\n', L_C_O
+
+        if align_axis_from is not None and align_axis_to is not None:
+            L_C_O = self.align_axis(L_C_O, align_axis_from, align_axis_to)
 
         L_B_W = utils.tcp_to_affine(self.robot[side].getl())
-        print('Axis aligned L_C_O : \n', L_C_O)
-        print('L_B_W : \n', L_B_W)
-        target_position = np.matmul(
+        print 'Axis aligned L_C_O:\n', L_C_O
+        print 'L_B_W:\n', L_B_W
+
+        target_L_B_W = np.matmul(
             L_B_W, np.matmul(
                 self.L_W_C[side], np.matmul(
-                    L_C_O, v_O
+                    L_C_O, L_O_W
                 )
             )
-        )[:3]
-
-        target_orientation = R.from_dcm(utils.to_33(np.matmul(
-            L_B_W, np.matmul(
-                self.L_W_C[side], np.matmul(
-                    L_C_O, r_O_W
-                )
-            )
-        ))).as_rotvec()
-
-        return np.concatenate([target_position, target_orientation])
+        )
+        return utils.affine_to_tcp(target_L_B_W)
 
     # Transform desk coordinates into base coordinates
     def desk_to_base(self, side, position=None, direction=None, scipy_R=None, dcm=None, affine=None):
@@ -145,19 +133,23 @@ class Agent():
 
     # Given r : scipy.spatial.transform.Rotation, from_axis : int, to_axis : vector,
     # this function will align r's from_axis'th axis to to_axis, in order to compensate DOPE orientation error.
-    def align_axis(self, r, from_axis, to_axis):
-        z = R.as_dcm(r)[:, from_axis]
+    def align_axis(self, affine, from_axis, to_axis):
+        t, r = affine[:3, 3], affine[:3, :3]
+
+        z = r[:, from_axis]
         cross_product = np.cross(z, to_axis)
-        a = R.from_rotvec(cross_product) * r
-        return a
+        new_r = np.matmul(R.from_rotvec(cross_product).as_dcm(), r)
+
+        return utils.to_44(new_r, t)
 
     # Reach the given object.
     # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
     # and then transformed into base coordinates with self.get_target_6d_pos.
-    def reach(self, side, obj):
+    # For align_axis_from and align_axis_to, see the comments at Agent.align_axis function.
+    def reach(self, side, obj, align_axis_from=None, align_axis_to=None):
         time.sleep(1)
-        target_6d_pos = self.get_target_6d_pos(side, obj, self.v_O_dict[obj], self.r_O_W_dict[obj])
-        print('target 6d pos : ', target_6d_pos)
+        target_6d_pos = self.get_target_6d_pos(side, obj, self.L_O_W_dict[obj], align_axis_from, align_axis_to)
+        print 'target 6d pos:', target_6d_pos
         self.robot[side].movel(target_6d_pos, 0.1, 0.1, relative=False)
 
     ''' Wrappers '''

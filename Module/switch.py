@@ -6,7 +6,7 @@ agent.ready('left')
 agent.idle('left', side_view=True, start_closed=True)
 
 # Reach and grip switch
-agent.reach('left', 'switch')
+agent.reach('left', 'switch', align_axis_from=0, align_axis_to=[0, 0, 1])
 agent.close_gripper()
 
 # Rotate
