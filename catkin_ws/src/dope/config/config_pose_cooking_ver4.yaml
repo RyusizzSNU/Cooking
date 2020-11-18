@@ -110,15 +110,30 @@ sigma: 3
 thresh_points: 0.03
 
 activities: {
-    "pan_handle_handle": False,
-    "carrot": False,
-    "onion": False,
-    "potato": False,
-    "oil_bowl": False,
-    "rice_bowl": False,
-    "salt_bowl": False,
-    "board_handle": False,
-    "knife_handle": False,
-    "switch": False,
-    "paddle_handle": False,
+    "L": {
+        "pan_handle_handle": False,
+        "carrot": False,
+        "onion": False,
+        "potato": False,
+        "oil_bowl": False,
+        "rice_bowl": False,
+        "salt_bowl": False,
+        "board_handle": False,
+        "knife_handle": False,
+        "switch": False,
+        "paddle_handle": False,
+    },
+    "R": {
+        "pan_handle_handle": False,
+        "carrot": False,
+        "onion": False,
+        "potato": False,
+        "oil_bowl": False,
+        "rice_bowl": False,
+        "salt_bowl": False,
+        "board_handle": False,
+        "knife_handle": False,
+        "switch": False,
+        "paddle_handle": False,
+    }
 }
