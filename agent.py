@@ -10,6 +10,7 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 import utils
 from dope_reader import DopeReader
+from hand import AllegroHandController
 
 '''
 Definitions:
@@ -28,7 +29,8 @@ class Agent():
             'top2' : [0.0577, -4.5743, 1.4047, 4.7180, -2.3311, -3.2124]
         },
         'right' : {
-            'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825]
+            'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825],
+            'top2' : [-2.0309, -3.985,   0.7016, -0.698,  -1.2536,  1.1223]
         }
     }
 
@@ -44,16 +46,22 @@ class Agent():
 
     # Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping
     L_O_W_dict = {
-        'carrot': np.array([[0, 0, -1, 0.185], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]]),
-        'onion' : np.array([[0, 0, -1, 0.183], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]]),
-        'pan_handle_handle': np.array([[0, -1, 0, 0], [0, 0, 1, -0.17], [-1, 0, 0, -0.03], [0, 0, 0, 1]]),
-        'rice_bowl' : np.array([[0, 0, 1, -0.19], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'oil_bowl' : np.array([[0, 0, 1, -0.21], [0, 1, 0, -0.03], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'salt_bowl' : np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-        'board_handle' : np.array([[0, 0, 1, -0.14], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]),
-        'knife_handle' : np.array([[0, 0, 1, -0.18], [1, 0, 0, 0.02], [0, 1, 0, 0], [0, 0, 0, 1]]),
-        'paddle_handle' : np.array([[-1, 0, 0, 0], [0, 0, -1, 0.18], [0, -1, 0, 0], [0, 0, 0, 1]]),
-        'switch' : np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+        'carrot': [np.array([[0, 0, -1, 0.17], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]])],
+        'onion' : [np.array([[0, 0, -1, 0.183], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]])],
+        'pan_handle_handle': [np.array([[0, -1, 0, 0], [0, 0, 1, -0.17], [-1, 0, 0, -0.03], [0, 0, 0, 1]])],
+        'rice_bowl' : [np.array([[0, 0, 1, -0.19], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]])],
+        'oil_bowl' : [np.array([[0, 0, 1, -0.21], [0, 1, 0, -0.03], [-1, 0, 0, 0], [0, 0, 0, 1]])],
+        'salt_bowl' : [np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])],
+        'board_handle' : [np.array([[0, 0, 1, -0.17], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
+        'knife_handle' :
+            [np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.1], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.03], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.09], [-1, 0, 0, 0.03], [0, -1, 0, -0.02], [0, 0, 0, 1]])],
+        'paddle_handle' :
+            [np.array([[1, 0, 0, -0.1], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
+            np.array([[1, 0, 0, -0.03], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
+            np.array([[1, 0, 0, -0.02], [0, 0, -1, 0.08], [0, 1, 0, 0.02], [0, 0, 0, 1]])],
+        'switch' : [np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])]
     }
 
     dope_scale_dict = {
@@ -82,8 +90,10 @@ class Agent():
         if side == 'left':
             self.robot['left'] = urx.Robot("192.168.1.66")
             self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'])
+            # self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'], payload=0.25, speed=50, force=10)
         if side == 'right':
             self.robot['right'] = urx.Robot("192.168.1.109")
+            self.hand = AllegroHandController()
 
         print 'Robot tcp:', np.array(self.robot[side].getl())
         print 'Robot joints:', np.array(self.robot[side].getj())
@@ -102,21 +112,32 @@ class Agent():
 
         if side == 'left':
             self.gripper.open_gripper()
+        elif side == 'right':
+            self.hand.lib_cmd('home')
 
-    # This function will transform the given 6d pos(v_O, r_O_W)
-    # from object coordinates into base coordinates
+    # Reach the given object.
+    # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
+    # and then transformed into base coordinates with self.get_target_6d_pos.
     # For align_axis_from and align_axis_to, see the comments at Agent.align_axis function.
-    def get_target_6d_pos(self, side, obj, L_O_W, align_axis_from=None, align_axis_to=None):
+    def reach(self, side, obj, align_axis_from=None, align_axis_to=None):
+        time.sleep(1)
         L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=self.dope_scale_dict[obj])
+        L_B_W = utils.tcp_to_affine(self.robot[side].getl())
         print 'dope L_C_O:\n', L_C_O
 
         if align_axis_from is not None and align_axis_to is not None:
             L_C_O = self.align_axis(L_C_O, align_axis_from, align_axis_to)
-
-        L_B_W = utils.tcp_to_affine(self.robot[side].getl())
         print 'Axis aligned L_C_O:\n', L_C_O
         print 'L_B_W:\n', L_B_W
 
+        for L_O_W in self.L_O_W_dict[obj]:
+            target_6d_pos = self.get_target_6d_pos(side, L_B_W, L_C_O, L_O_W)
+            print 'target 6d pos:', target_6d_pos
+            self.robot[side].movel(target_6d_pos, 0.1, 0.1, relative=False)
+
+    # This function will transform the given affine matrix(L_O_W)
+    # from object coordinates into base coordinates, given object to camera transformation(L_C_O)
+    def get_target_6d_pos(self, side, L_B_W, L_C_O, L_O_W):
         target_L_B_W = np.matmul(
             L_B_W, np.matmul(
                 self.L_W_C[side], np.matmul(
@@ -144,16 +165,6 @@ class Agent():
         new_r = np.matmul(R.from_rotvec(cross_product).as_dcm(), r)
 
         return utils.to_44(new_r, t)
-
-    # Reach the given object.
-    # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
-    # and then transformed into base coordinates with self.get_target_6d_pos.
-    # For align_axis_from and align_axis_to, see the comments at Agent.align_axis function.
-    def reach(self, side, obj, align_axis_from=None, align_axis_to=None):
-        time.sleep(1)
-        target_6d_pos = self.get_target_6d_pos(side, obj, self.L_O_W_dict[obj], align_axis_from, align_axis_to)
-        print 'target 6d pos:', target_6d_pos
-        self.robot[side].movel(target_6d_pos, 0.1, 0.1, relative=False)
 
     ''' Wrappers '''
     # Wrapper for urx.Robot.getj
@@ -220,9 +231,14 @@ class Agent():
 
 if __name__ == '__main__':
     agent = Agent()
-    agent.ready('left')
-    #agent.idle('left', side_view=False, start_closed=True)
-    #time.sleep(1)
-    #agent.reach('left', 'rice_bowl')
+    #agent.ready('left')
+    #agent.idle('left', view='top', start_closed=True)
+    agent.ready('right')
+    agent.idle('right', view='top2', start_closed=True)
+
+    agent.reach('right', 'knife_handle')
+    agent.hand.lib_cmd('envelop')
+    #agent.hand.grab()
+
     #agent.close_gripper()
     agent.close()
