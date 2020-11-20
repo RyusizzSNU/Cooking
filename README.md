@@ -92,7 +92,7 @@ roslaunch realsense2_camera rs_camera.launch camera:=cam_R serial_no:=0212220713
 ```
 (dope)
 ```
-roslaunch dope dope_double.launch config:=/home/tidy/Cooking/catkin_ws/src/dope/config/config_pose_cooking_ver4.yaml
+roslaunch dope dope_double.launch config:=/home/tidy/Cooking/catkin_ws/src/dope/config/config_pose_cooking_dual.yaml
 ```
 
 To visualize the dope, see the rviz or image_view
