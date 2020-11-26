@@ -54,9 +54,9 @@ class Agent():
         'salt_bowl' : [np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])],
         'board_handle' : [np.array([[0, 0, 1, -0.17], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
         'knife_handle' :
-            [np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.1], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.03], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.10], [-1, 0, 0, 0.03], [0, -1, 0, -0.02], [0, 0, 0, 1]])],
+            [np.array([[0, 0, 1, -0.15], [-1, 0, 0, 0.08], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.15], [-1, 0, 0, 0.03], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.08], [-1, 0, 0, 0.03], [0, -1, 0, -0.0], [0, 0, 0, 1]])],
         'paddle_handle' :
             [np.array([[1, 0, 0, -0.1], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.03], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
@@ -68,7 +68,7 @@ class Agent():
     dope_scale_dict = {
         'board_handle' : 1,
         'paddle_handle' : 1,
-        'knife_handle' : 1,
+        'knife_handle' : 1.18,
         'spam' : 1.18,
         'switch' : 1.18,
         'others' : 0.05
@@ -233,8 +233,8 @@ class Agent():
 
 if __name__ == '__main__':
     agent = Agent()
-    # agent.ready('left')
-    # agent.idle('left', view='top', start_closed=True)
+    #agent.ready('left')
+    #agent.idle('left', view='top', start_closed=True)
 
     #agent.reach('left', 'spam')
     #agent.close_gripper()
@@ -243,7 +243,7 @@ if __name__ == '__main__':
     agent.idle('right', view='top2', start_closed=True)
 
     #agent.reach('right', 'knife_handle')
-    #agent.hand.lib_cmd('envelop')
+    #agent.hand.grab()
     #agent.hand.grab()
 
     #agent.close_gripper()

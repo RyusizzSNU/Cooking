@@ -6,19 +6,21 @@ from agent import Agent
 
 agent = Agent()
 agent.ready('right')
-#agent.idle('right', view='top2', start_closed=True)
+agent.idle('right', view='top2', start_closed=True)
 
-#agent.reach('right', 'knife_handle')
-#agent.hand.lib_cmd('envelop')
-#agent.hand.grab()
+agent.reach('right', 'knife_handle')
+agent.hand.grab()
 
-#agent.moveD('right', [0, 0, 0.3], relative=True)
+agent.moveD('right', [0, 0, 0.3], relative=True)
+
+agent.movej('right', [0, 0, 0, 0, 1.57, 0], relative=True)
 
 n = 10
 a = math.pi / 12
-pos1 = np.array([0.60, 0.45, 0.492])
-pos2 = np.array([0.45, 0.45, 0.492])
-rot = np.array([[0, -math.cos(a), -math.sin(a)], [-1, 0, 0], [0, math.sin(a), -math.cos(a)]])
+pos1 = np.array([0.85, 0.38, 0.47])
+pos2 = np.array([0.70, 0.38, 0.47])
+rot = np.array([[0, -math.cos(a), -math.sin(a)], [0, -math.sin(a), math.cos(a)], [-1, 0, 0]])
+#rot = np.array([[0, -math.cos(a), -math.sin(a)], [-1, 0, 0], [0, math.sin(a), -math.cos(a)]])
 rot = rot.T
 
 pos_list = []

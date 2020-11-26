@@ -6,16 +6,15 @@ from agent import Agent
 
 agent = Agent()
 agent.ready('right')
-#agent.idle('right', view='top2', start_closed=True)
+agent.idle('right', view='top2', start_closed=True)
 
-#agent.reach('right', 'paddle_handle')
-#agent.hand.lib_cmd('envelop')
-#agent.hand.grab()
+agent.reach('right', 'paddle_handle')
+agent.hand.grab()
 
-#agent.moveD('right', [0, 0, 0.3], relative=True)
+agent.moveD('right', [0, 0, 0.3], relative=True)
 
 n = 8
-bound = np.array([[0.47, 0.40, 0.335], [0.57, 0.50, 0.336]])
+bound = np.array([[0.47, 0.40, 0.34], [0.57, 0.50, 0.341]])
 
 poses = np.random.uniform(bound[0], bound[1], (n, 3))
 
