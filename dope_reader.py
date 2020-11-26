@@ -21,6 +21,7 @@ class DopeReader(object):
         rospy.Subscriber('/dope/%s/pose_salt_bowl'%name, PoseStamped, self.salt_bowl_callback)
         rospy.Subscriber('/dope/%s/pose_board_handle'%name, PoseStamped, self.board_handle_callback)
         rospy.Subscriber('/dope/%s/pose_switch'%name, PoseStamped, self.switch_callback)
+        rospy.Subscriber('/dope/%s/pose_spam'%name, PoseStamped, self.spam_callback)
         # rospy.Subscriber('/dope/rgb_points', Image, self.dope_image_callback
 
     def board_handle_callback(self, data):
@@ -62,6 +63,9 @@ class DopeReader(object):
     def switch_callback(self, data):
         p, o = data.pose.position, data.pose.orientation
         self.obj_poses['switch'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+    def spam_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['spam'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
 
     def get_obj_pos(self, obj, interval=0.1, num_samples=10):
         if not obj in self.obj_poses:

@@ -42,7 +42,7 @@ class Agent():
              'right' : np.array([[0, -1, 0, -0.25], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 1.0323], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), -0.1838], [0, 0, 0, 1]])}
 
     objects = ['carrot', 'onion', 'oil_bowl', 'rice_bowl', 'salt_bowl',
-               'board_handle', 'knife_handle', 'paddle_handle', 'pan_handle_handle', 'switch']
+               'board_handle', 'knife_handle', 'paddle_handle', 'pan_handle_handle', 'switch', 'spam']
 
     # Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping
     L_O_W_dict = {
@@ -56,18 +56,20 @@ class Agent():
         'knife_handle' :
             [np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.1], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
             np.array([[0, 0, 1, -0.16], [-1, 0, 0, 0.03], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.09], [-1, 0, 0, 0.03], [0, -1, 0, -0.02], [0, 0, 0, 1]])],
+            np.array([[0, 0, 1, -0.10], [-1, 0, 0, 0.03], [0, -1, 0, -0.02], [0, 0, 0, 1]])],
         'paddle_handle' :
             [np.array([[1, 0, 0, -0.1], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.03], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.02], [0, 0, -1, 0.08], [0, 1, 0, 0.02], [0, 0, 0, 1]])],
-        'switch' : [np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])]
+        'switch' : [np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
+        'spam' : [np.array([[-1, 0, 0, 0], [0, 0, -1, 0.10], [0, -1, 0, 0], [0, 0, 0, 1]])]
     }
 
     dope_scale_dict = {
         'board_handle' : 1,
         'paddle_handle' : 1,
         'knife_handle' : 1,
+        'spam' : 1.18,
         'switch' : 1.18,
         'others' : 0.05
     }
@@ -231,13 +233,17 @@ class Agent():
 
 if __name__ == '__main__':
     agent = Agent()
-    #agent.ready('left')
-    #agent.idle('left', view='top', start_closed=True)
+    # agent.ready('left')
+    # agent.idle('left', view='top', start_closed=True)
+
+    #agent.reach('left', 'spam')
+    #agent.close_gripper()
+
     agent.ready('right')
     agent.idle('right', view='top2', start_closed=True)
 
-    agent.reach('right', 'knife_handle')
-    agent.hand.lib_cmd('envelop')
+    #agent.reach('right', 'knife_handle')
+    #agent.hand.lib_cmd('envelop')
     #agent.hand.grab()
 
     #agent.close_gripper()
