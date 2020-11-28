@@ -54,9 +54,9 @@ class Agent():
         'salt_bowl' : [np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])],
         'board_handle' : [np.array([[0, 0, 1, -0.17], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
         'knife_handle' :
-            [np.array([[0, 0, 1, -0.15], [-1, 0, 0, 0.08], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.15], [-1, 0, 0, 0.03], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.08], [-1, 0, 0, 0.03], [0, -1, 0, -0.0], [0, 0, 0, 1]])],
+            [np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.09], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.085], [0, -1, 0, 0.0], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.135], [-1, 0, 0, 0.085], [0, -1, 0, 0.0], [0, 0, 0, 1]])],
         'paddle_handle' :
             [np.array([[1, 0, 0, -0.1], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.03], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
@@ -68,9 +68,13 @@ class Agent():
     dope_scale_dict = {
         'board_handle' : 1,
         'paddle_handle' : 1,
-        'knife_handle' : 1.18,
+        'knife_handle' : 1.25,
         'spam' : 1.18,
         'switch' : 1.18,
+        'oil_bowl' : 0.04878,
+        'rice_bowl' : 0.04968,
+        'carrot' : 0.04953,
+        'onion' : 0.04930,
         'others' : 0.05
     }
 
@@ -110,12 +114,15 @@ class Agent():
             elif start_opened:
                 self.gripper.open_gripper()
 
-        self.robot[side].movej(self.idle_joint[side][view], 0.1, 0.1)
+        self.robot[side].movej(self.idle_joint[side][view], 0.25, 0.25)
 
         if side == 'left':
             self.gripper.open_gripper()
         elif side == 'right':
             self.hand.lib_cmd('home')
+            self.hand.movej(joint_num=12, val=1.5)
+            self.hand.movej(joint_num=14, val=0)
+            self.hand.movej(joint_num=15, val=0)
 
     # Reach the given object.
     # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
@@ -242,9 +249,8 @@ if __name__ == '__main__':
     agent.ready('right')
     agent.idle('right', view='top2', start_closed=True)
 
-    #agent.reach('right', 'knife_handle')
-    #agent.hand.grab()
-    #agent.hand.grab()
+    agent.reach('right', 'knife_handle')
+    agent.hand.grab()
 
     #agent.close_gripper()
     agent.close()

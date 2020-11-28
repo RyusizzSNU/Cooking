@@ -11,14 +11,14 @@ agent.idle('right', view='top2', start_closed=True)
 agent.reach('right', 'knife_handle')
 agent.hand.grab()
 
-agent.moveD('right', [0, 0, 0.3], relative=True)
+agent.moveD('right', [0, 0, 0.3], vel=0.25, relative=True)
 
 agent.movej('right', [0, 0, 0, 0, 1.57, 0], relative=True)
 
 n = 10
 a = math.pi / 12
-pos1 = np.array([0.85, 0.38, 0.47])
-pos2 = np.array([0.70, 0.38, 0.47])
+pos1 = np.array([0.85, 0.42, 0.495])
+pos2 = np.array([0.70, 0.42, 0.495])
 rot = np.array([[0, -math.cos(a), -math.sin(a)], [0, -math.sin(a), math.cos(a)], [-1, 0, 0]])
 #rot = np.array([[0, -math.cos(a), -math.sin(a)], [-1, 0, 0], [0, math.sin(a), -math.cos(a)]])
 rot = rot.T
