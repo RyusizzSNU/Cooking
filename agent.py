@@ -25,12 +25,15 @@ class Agent():
     idle_joint = {
         'left' : {
             'top' : [-0.3813, -4.0254, 1.2768, 4.6921, -2.2541, -2.6285],
-            'lateral' : [0.5051, -3.0969, 1.5315, 3.5800, -4.0450, -0.9177],
+            'lateral' : [0.3382, -3.028,   1.5124,  3.4266, -3.9868, -1.1204],
+            #'lateral' : [0.2014, -3.1329, 1.6326, 3.2768, -3.9478, -1.2993],
             'top2' : [0.0577, -4.5743, 1.4047, 4.7180, -2.3311, -3.2124]
         },
         'right' : {
             'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825],
-            'top2' : [-2.0309, -3.985,   0.7016, -0.698,  -1.2536,  1.1223]
+            'top2' : [-2.0728, -4.4702,  1.1529, -1.1107, -1.3792,  1.13  ],
+            #'top2' : [-2.0309, -3.985,   0.7016, -0.698,  -1.2536,  1.1223],
+            'board' : [-2.2879, -4.511,   1.3044, -0.8525, -1.0675, 1.2349]
         }
     }
 
@@ -47,29 +50,29 @@ class Agent():
     # Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping
     L_O_W_dict = {
         'carrot': [np.array([[0, 0, -1, 0.17], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]])],
-        'onion' : [np.array([[0, 0, -1, 0.183], [-1, 0, 0, 0], [0, 1, 0, -0.035], [0, 0, 0, 1]])],
+        'onion' : [np.array([[0, 0, -1, 0.17], [-1, 0, 0, 0], [0, 1, 0, -0.0], [0, 0, 0, 1]])],
         'pan_handle_handle': [np.array([[0, -1, 0, 0], [0, 0, 1, -0.17], [-1, 0, 0, -0.03], [0, 0, 0, 1]])],
         'rice_bowl' : [np.array([[0, 0, 1, -0.19], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]])],
         'oil_bowl' : [np.array([[0, 0, 1, -0.21], [0, 1, 0, -0.03], [-1, 0, 0, 0], [0, 0, 0, 1]])],
         'salt_bowl' : [np.array([[0, 0, 1, -0.203], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])],
-        'board_handle' : [np.array([[0, 0, 1, -0.17], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
+        'board_handle' : [np.array([[0, 0, 1, -0.16], [0, -1, 0, 0.02], [1, 0, 0, 0], [0, 0, 0, 1]])],
         'knife_handle' :
-            [np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.09], [0, -1, 0, -0.1], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.085], [0, -1, 0, 0.0], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.135], [-1, 0, 0, 0.085], [0, -1, 0, 0.0], [0, 0, 0, 1]])],
+            [np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.09], [0, -1, 0, -0.16], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.17], [-1, 0, 0, 0.07], [0, -1, 0, -0.06], [0, 0, 0, 1]]),
+            np.array([[0, 0, 1, -0.135], [-1, 0, 0, 0.07], [0, -1, 0, -0.06], [0, 0, 0, 1]])],
         'paddle_handle' :
             [np.array([[1, 0, 0, -0.1], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.03], [0, 0, -1, 0.16], [0, 1, 0, 0.1], [0, 0, 0, 1]]),
             np.array([[1, 0, 0, -0.02], [0, 0, -1, 0.08], [0, 1, 0, 0.02], [0, 0, 0, 1]])],
         'switch' : [np.array([[0, 0, 1, -0.157], [0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])],
-        'spam' : [np.array([[-1, 0, 0, 0], [0, 0, -1, 0.10], [0, -1, 0, 0], [0, 0, 0, 1]])]
+        'spam' : [np.array([[1, 0, 0, 0], [0, 0, -1, 0.15], [0, 1, 0, -0.03], [0, 0, 0, 1]])]
     }
 
     dope_scale_dict = {
         'board_handle' : 1,
         'paddle_handle' : 1,
         'knife_handle' : 1.25,
-        'spam' : 1.18,
+        'spam' : 1.18, # 1.12
         'switch' : 1.18,
         'oil_bowl' : 0.04878,
         'rice_bowl' : 0.04968,
@@ -96,6 +99,7 @@ class Agent():
         if side == 'left':
             self.robot['left'] = urx.Robot("192.168.1.66")
             self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'])
+            self.gripper.force = 100
             # self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'], payload=0.25, speed=50, force=10)
         if side == 'right':
             self.robot['right'] = urx.Robot("192.168.1.109")
@@ -107,17 +111,17 @@ class Agent():
     # side: str(either 'left' or 'right', view: str('top', 'lateral', ...), start_closed: bool, start_opened: bool
     # Send robot to an idle position, with given view.
     # start_closed or start_opened could be given in order to prevent intermediate collision.
-    def idle(self, side, view='top', start_closed=False, start_opened=False):
+    def idle(self, side, view='top', start_closed=False, start_opened=False, acc=0.25, vel=0.25, wait=True):
         if side == 'left':
             if start_closed:
-                self.gripper.close_gripper()
+                self.close_gripper()
             elif start_opened:
-                self.gripper.open_gripper()
+                self.open_gripper()
 
-        self.robot[side].movej(self.idle_joint[side][view], 0.25, 0.25)
+        self.movej(side, self.idle_joint[side][view], acc=acc, vel=vel, wait=wait)
 
         if side == 'left':
-            self.gripper.open_gripper()
+            self.open_gripper()
         elif side == 'right':
             self.hand.lib_cmd('home')
             self.hand.movej(joint_num=12, val=1.5)
@@ -129,6 +133,10 @@ class Agent():
     # and then transformed into base coordinates with self.get_target_6d_pos.
     # For align_axis_from and align_axis_to, see the comments at Agent.align_axis function.
     def reach(self, side, obj, align_axis_from=None, align_axis_to=None):
+        side_str = 'L'
+        if side == 'right':
+            side_str = 'R'
+        rospy.set_param('/dope/activities/%s/%s'%(side_str, obj), True)
         time.sleep(1)
         L_C_O = utils.dope_to_affine(self.dope_reader[side].get_obj_pos(obj), scale=self.dope_scale_dict[obj])
         L_B_W = utils.tcp_to_affine(self.robot[side].getl())
@@ -143,6 +151,8 @@ class Agent():
             target_6d_pos = self.get_target_6d_pos(side, L_B_W, L_C_O, L_O_W)
             print 'target 6d pos:', target_6d_pos
             self.robot[side].movel(target_6d_pos, 0.1, 0.1, relative=False)
+
+        rospy.set_param('/dope/activities/%s/%s' % (side_str, obj), False)
 
     # This function will transform the given affine matrix(L_O_W)
     # from object coordinates into base coordinates, given object to camera transformation(L_C_O)
@@ -202,14 +212,17 @@ class Agent():
     # Wrapper for gripper.open_gripper
     def open_gripper(self):
         self.gripper.open_gripper()
+        time.sleep(0.2)
 
     # Wrapper for gripper.close_gripper
     def close_gripper(self):
         self.gripper.close_gripper()
+        time.sleep(0.2)
 
     # Wrapper for gripper.gripper_action. 0 for open and 255 for close.
     def gripper_action(self, val):
         self.gripper.gripper_action(val)
+        time.sleep(0.2)
 
     # Move in Desk Coordinate system(as if the robot base is at desk corner, axis aligned)
     # Also handles 3-dimensional input(as position)
@@ -243,14 +256,14 @@ if __name__ == '__main__':
     #agent.ready('left')
     #agent.idle('left', view='top', start_closed=True)
 
-    #agent.reach('left', 'spam')
-    #agent.close_gripper()
+    #agent.reach('left', 'onion')
+    #agent.gripper_action(int(0.5 * 255))
 
     agent.ready('right')
-    agent.idle('right', view='top2', start_closed=True)
+    #agent.idle('right', view='board', start_closed=True)
 
-    agent.reach('right', 'knife_handle')
-    agent.hand.grab()
+    #agent.reach('right', 'knife_handle')
+    #agent.hand.grab()
 
     #agent.close_gripper()
     agent.close()
