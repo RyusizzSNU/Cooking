@@ -63,21 +63,26 @@ class DopeReader(object):
     def switch_callback(self, data):
         p, o = data.pose.position, data.pose.orientation
         self.obj_poses['switch'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
     def spam_callback(self, data):
         p, o = data.pose.position, data.pose.orientation
         self.obj_poses['spam'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
 
+    def reset(self):
+        self.obj_poses = {}
+
     def get_obj_pos(self, obj, interval=0.1, num_samples=10):
-        if not obj in self.obj_poses:
-            return None
+        while obj not in self.obj_poses:
+            print(self.name, obj, 'not detected')
+            time.sleep(1)
+
         poses = []
         for i in range(num_samples):
-            if self.obj_poses[obj] is not None:
-                poses.append(self.obj_poses[obj])
+            poses.append(self.obj_poses[obj])
             time.sleep(interval)
         poses = np.array(poses)
-        assert len(poses) > 0
-
-        print('obj poses std : ', np.std(poses, 0))
+        if len(poses) == 0:
+            raise AssertionError
+        std = np.std(poses, 0)
 
         return np.mean(poses, 0)

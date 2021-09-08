@@ -1,6 +1,7 @@
 import math
 from agent import Agent
 import utils
+import time
 
 def manipulate_bowl(agent, obj):
     agent.idle('left', view='top', start_closed=True)
@@ -9,13 +10,17 @@ def manipulate_bowl(agent, obj):
     agent.reach('left', obj, align_axis_from=0, align_axis_to=[0, 0, 1])
     agent.close_gripper()
     j1 = agent.getj('left')
+    time.sleep(1)
 
     # Raise
     agent.moveD('left', [0, 0, 0.4], relative=True)
     j2 = agent.getj('left')
 
+    if obj == 'rice_bowl' or obj == 'salt_bowl':
+        agent.movej('left', [0, 0, 0, 0, 0, 0.5], relative=True)
+
     # Position and Orientations for pouring
-    pos = [0.68, 0.38, 0.45]
+    pos = [0.64, 0.40, 0.53]
     a = math.pi / 9
     rot1 = [[0, 1, 0], [1, 0, 0], [0, 0, -1]]
     rot2 = [[0, 1, 0], [-math.sin(a), 0, math.cos(a)], [math.cos(a), 0, math.sin(a)]]
@@ -39,8 +44,9 @@ def manipulate_bowl(agent, obj):
     agent.movej('left', j2)
     agent.movej('left', j1, vel=0.2)
     agent.open_gripper()
+    agent.moveD('left', [0, 0, 0.2], relative=True)
 
 if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
-    manipulate_bowl(agent, 'rice_bowl')
+    manipulate_bowl(agent, 'salt_bowl')

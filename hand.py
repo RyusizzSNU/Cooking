@@ -22,14 +22,14 @@ class AllegroHandController(object):
 
     # it can set the torque envelop parameter value
     def envelop(self, val):
-        print(Float32(val))
+        #print(Float32(val))
         self.envelop_publisher.publish(Float32(val))
         rospy.sleep(3)
 
     # it can be used like keyboard_controller
     # string list : envelop, ready, home... etc
     def lib_cmd(self, val):
-        print(String(val))
+        #print(String(val))
         self.libcmd_publisher.publish(String(val))
         rospy.sleep(1)
 
@@ -46,7 +46,7 @@ class AllegroHandController(object):
         if joints is not None:
             next_position.position = joints
         elif joint_num is not None and val is not None:
-            print(self.joint_states)
+            #print(self.joint_states)
             next_position.position = list(self.joint_states.position)
             next_position.position[joint_num] = val
         effort = np.array([0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.75, 0.75, 0.5, 0.5])

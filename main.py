@@ -105,7 +105,7 @@ def robot_move(h, v, acc, vel):
 if __name__ == '__main__':
     rospy.init_node('dope_rospy_youngjae_test')
 
-    dope_confroller = DopeController()
+    dope_controller = DopeController()
     rospy.sleep(1)
     gripper = Robotiq_Two_Finger_Gripper(robot)
     # init position joint state
@@ -116,14 +116,14 @@ if __name__ == '__main__':
     robot.movej(init, 0.2, 0.2, relative=False)
     gripper.open_gripper()
     if int(a) == 1:
-        pan_pose, pan_orient = dope_confroller.get_pan_pose()
+        pan_pose, pan_orient = dope_controller.get_pan_pose()
         print('pan_pose x, y, z', pan_pose.x, pan_pose.y, pan_pose.z)
         print('pan_orient x, y, z, w', pan_orient.x, pan_orient.y, pan_orient.z, pan_orient.w)
         dope_list = [pan_pose.x, pan_pose.y,pan_pose.z,0,0,0]
         h, v = convert(dope_list)
         robot_move(h, v, 0.1, 0.1)
     else :
-        oil_bowl_pose, oil_bowl_orient = dope_confroller.get_oil_bowl_pose()
+        oil_bowl_pose, oil_bowl_orient = dope_controller.get_oil_bowl_pose()
         print('oil_bowl_pose x, y, z', oil_bowl_pose.x, oil_bowl_pose.y, oil_bowl_pose.z)
         print('oil_bowl_orient x, y, z, w', oil_bowl_orient.x, oil_bowl_orient.y, oil_bowl_orient.z, oil_bowl_orient.w)
 
