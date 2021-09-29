@@ -1,5 +1,4 @@
 import math
-from agent import Agent
 import time
 
 def manipulate_switch(agent, clockwise=True, wait=True):
@@ -18,7 +17,3 @@ def manipulate_switch(agent, clockwise=True, wait=True):
 
     agent.idle('left', view='lateral', start_closed=True)
 
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('left')
-    manipulate_switch(agent)

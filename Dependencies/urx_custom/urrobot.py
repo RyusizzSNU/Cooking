@@ -266,7 +266,8 @@ class URRobot(object):
         vels.append(acc)
         vels.append(min_time)
         # prog = "{}([{},{},{},{},{},{}], a={}, t_min={})".format(command, *vels)
-        prog = "{}([{},{},{},{},{},{}], a={}, t={})".format(command, *vels)
+        prog = "{}([{},{},{},{},{},{}],{},{})".format(command, *vels)
+        print("im here")
         self.send_program(prog)
 
     def movej(self, joints, acc=0.1, vel=0.05, wait=True, relative=False, threshold=None):

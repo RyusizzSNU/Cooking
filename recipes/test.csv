@@ -1,0 +1,3 @@
+narration_id,participant_id,video_id,narration_timestamp,start_timestamp,stop_timestamp,start_frame,stop_frame,narration,verb,verb_class,noun,noun_class
+P1_10_0,P1,P1_10,0:0:4,0:0:4,0:0:9,125,276,put carrot,put,1,carrot,86
+P1_10_1,P1,P1_10,0:0:9,0:0:9,0:0:12,276,351,pour oil_bowl,pour,0,oil_bowl,4

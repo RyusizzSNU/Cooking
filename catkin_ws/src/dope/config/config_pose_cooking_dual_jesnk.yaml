@@ -11,7 +11,6 @@ weights: {
     "pan_handle_handle":"package://dope/weights/train_ver3/pan_handle_handle.pth",
 #    "knife_holder":"package://dope/weights/train_ver2/knife_holder_60.pth",
     "carrot":"package://dope/weights/train_ver3/carrot.pth",
-    "onion":"package://dope/weights/train_ver3/onion.pth",
 #    "potato":"package://dope/weights/train_ver3/potato.pth",
     "oil_bowl":"package://dope/weights/train_ver3/oil_bowl.pth",
     "rice_bowl":"package://dope/weights/train_ver4/rice_bowl.pth",
@@ -20,14 +19,16 @@ weights: {
     "knife_handle":"package://dope/weights/train_ver4/knife_handle.pth",
     "switch":"package://dope/weights/train_ver4/switch.pth",
     "paddle_handle": "package://dope/weights/train_ver4/paddle_handle.pth",
-    "spam": "package://dope/weights/train_ver5/spam.pth",
+    "onion":"package://dope/weights/train_ver6/onion_60.pth",
+    "spam": "package://dope/weights/train_ver6/spam_60.pth",
+    "springOnion":"package://dope/weights/train_ver6/springOnion_60.pth",
+    "pepperBowl":"package://dope/weights/train_ver6/pepperBowl_60.pth",
 }
 
 # Cuboid dimension in cm x,y,z
 dimensions: {
     "pan_handle_handle": [ 300, 76, 166 ],
     "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],
-    "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
 #    "potato": [ 88.9281005859375, 178.0166015625, 260.002197265625 ],
     "rice_bowl": [ 118.32160186767578, 364.16009521484375, 319.51541137695312 ],
     "salt_bowl": [ 49.638698577880859, 101.38829803466797, 79.934799194335938 ],
@@ -37,13 +38,15 @@ dimensions: {
     "switch": [ 0.69999998807907104, 4.9983000755310059, 5 ],
     "paddle_handle": [ 10.300000190734863, 7.7635998725891113, 7.9991002082824707 ],
 #    "knife_holder": [ 340, 160, 300 ],
-    "spam": [ 4.4000000953674316, 6.4566998481750488, 8 ]
+    "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
+    "spam": [ 4.4000000953674316, 6.4566998481750488, 8 ],
+    "springOnion": [ 4.4000000953674316, 11.4566998481750488, 8 ], #new added
+    "pepperBowl": [ 8.4000000953674316, 8.4566998481750488, 15 ], #new added
 }
 
 class_ids: {
     "pan_handle_handle": 1,
     "carrot": 2,
-    "onion": 3,
 #    "potato": 4,
     "rice_bowl": 4,
     "salt_bowl": 5,
@@ -53,13 +56,15 @@ class_ids: {
     "switch": 9,
     "paddle_handle": 10,
 #    "knife_holder": 2,
+    "onion": 3,
     "spam": 11,
+    "springOnion": 12,
+    "pepperBowl": 13,
 }
 
 draw_colors: {
     "pan_handle_handle": [0, 104, 255],  # blue
     "carrot": [255, 255, 255], # white
-    "onion": [217, 12, 232], # magenta
 #    "potato": [255, 101, 0], # orange
     "rice_bowl": [232, 222, 12], # yellow
     "salt_bowl": [0, 0, 0], # black
@@ -69,7 +74,10 @@ draw_colors: {
     "switch": [0, 255, 255], # cyan
     "paddle_handle": [128, 128, 128], # gray
 #    "knife_holder": [13, 255, 128], # green
+    "onion": [217, 12, 232], # magenta
     "spam": [255, 101, 0], # orange
+    "springOnion": [64,86,30],
+    "pepperBowl": [86,64,130],
 }
 
 # optional: provide a transform that is applied to the pose returned by DOPE
@@ -108,6 +116,8 @@ mesh_scales: {
     "switch": 0.01,
     "paddle_handle": 0.01,
     "spam": 0.01,
+    "springOnion": 0.01,
+    "pepperBowl": 0.01,
 }
 
 # Config params for DOPE
@@ -120,7 +130,6 @@ activities: {
     "L": {
         "pan_handle_handle": False,
         "carrot": False,
-        "onion": False,
         "oil_bowl": False,
         "rice_bowl": False,
         "salt_bowl": False,
@@ -128,12 +137,14 @@ activities: {
         "knife_handle": False,
         "switch": False,
         "paddle_handle": False,
-        "spam": False,
+        "onion": True,
+        "spam": True,
+        "springOnion": True,
+        "pepperBowl": True,
     },
     "R": {
         "pan_handle_handle": False,
         "carrot": False,
-        "onion": False,
         "oil_bowl": False,
         "rice_bowl": False,
         "salt_bowl": False,
@@ -141,6 +152,9 @@ activities: {
         "knife_handle": False,
         "switch": False,
         "paddle_handle": False,
-        "spam": False,
+        "onion": True,
+        "spam": True,
+        "springOnion": True,
+        "pepperBowl": True,
     }
 }

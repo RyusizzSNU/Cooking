@@ -156,7 +156,11 @@ class Robot(URRobot):
     def speedj(self, velocities, acc, min_time):
         """
         move at given joint velocities until minimum min_time seconds
+
+
         """
+
+        print("speedj_cooking")
         return self.speedx("speedj", velocities, acc, min_time)
 
     def speedl_tool(self, velocities, acc, min_time):

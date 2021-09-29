@@ -11,6 +11,14 @@ import numpy as np
 import utils
 from dope_reader import DopeReader
 from hand import AllegroHandController
+from Module.board import manipulate_board
+from Module.bowl import manipulate_bowl
+from Module.food import manipulate_food, turnback_food
+from Module.knife import manipulate_knife, turnback_knife
+from Module.paddle import manipulate_paddle
+from Module.switch import manipulate_switch
+from Module.Action import Action, Param
+
 
 '''
 Definitions:
@@ -26,7 +34,8 @@ class Agent():
         'left' : {
             'top' : [-0.3813, -4.0254, 1.2768, 4.6921, -2.2541, -2.6285],
             'lateral' : [0.3382, -3.028,   1.5124,  3.4266, -3.9868, -1.1204],
-            'top2' : [-0.2033, -4.1432,  0.2977,  5.6389, -2.3075, -2.857]
+            'top2' : [-0.2033, -4.1432,  0.2977,  5.6389, -2.3075, -2.857],
+            'stopover': [0.0945, -3.3202,0.9582, 4.0455, -3.5693, -2.9357]
         },
         'right' : {
             'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825],
@@ -36,8 +45,6 @@ class Agent():
             'put_paddle' : [-2.6736, -3.7647,  1.5082, -2.5686, -1.9088, 1.7905]
         }
     }
-
-    integrade_joint = [0.0945, -3.3202,  0.9582,  4.0455, -3.5693, -2.9357]
 
     # Camera to Wrist transformation matrix
     L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.12], [0, 0, 1, 0.02], [0, 0, 0, 1]]),
@@ -92,12 +99,66 @@ class Agent():
         rospy.init_node('dope_reader')
         self.robot = {}
         self.dope_reader = {'left' : DopeReader('L'), 'right' : DopeReader('R')}
+        self.read_poses()
 
         for obj in self.objects:
             if obj not in self.dope_scale_dict:
                 self.dope_scale_dict[obj] = self.dope_scale_dict['others']
 
         rospy.sleep(1)
+
+    def read_poses(self):
+        self.poses = {}
+        with open('./poses.csv', 'r') as f:
+            lines = f.readlines()
+            for line in lines[1:-1]:
+                tokens = line.split('\t')
+                side, name = tokens[0], tokens[1]
+                if side not in self.poses:
+                    self.poses[side] = {}
+                joint = []
+                for i in range(2, 8):
+                    joint.append(float(tokens[i]))
+                    assert float(tokens[i]) == self.idle_joint[side][name][i-2]
+                self.poses[side][name] = joint
+    
+    def get_actions_dict(self):
+        actions_dict = [
+            Action('Manipulate Board', manipulate_board, []),
+            Action('Manipulate Bowl', manipulate_bowl, [Param('Object', {
+                    'Rice Bowl' : 'rice_bowl',
+                    'Salt Bowl' : 'salt_bowl',
+                    'Oil Bowl' : 'oil_bowl'
+                })
+            ]),
+            Action('Manipulate Food', manipulate_food, [Param('Object', {
+                    'Onion' : 'onion',
+                    'Spam' : 'spam',
+                    'Carrot' : 'carrot'
+                })
+            ]),
+            Action('Manipulate Knife', manipulate_knife, [Param('Food', {
+                    'Onion' : 'onion',
+                    'Spam' : 'spam',
+                    'Carrot' : 'carrot'
+                }), Param('Start picking up knife', {
+                    'Yes' : True,
+                    'No' : False
+                })
+            ]),
+            Action('Manipulate Paddle', manipulate_paddle, []),
+            Action('Manipulate Switch', manipulate_switch, [Param('Direction', {
+                    'Clockwise' : True,
+                    'Counterclockwise' : False
+                })
+            ])
+        ]
+        return actions_dict
+
+    def execute_instruction(self, instruction):
+        verb, noun = instruction[0], instruction[1]
+        print(verb + " " + noun)
+
 
     # Initialize robot, and go to idle
     def ready(self, side):
@@ -124,7 +185,7 @@ class Agent():
                 self.open_gripper()
 
         self.dope_reader[side].reset()
-        self.movej(side, self.idle_joint[side][view], acc=acc, vel=vel, wait=wait)
+        self.movej(side, self.poses[side][view], acc=acc, vel=vel, wait=wait)
 
         if side == 'left':
             self.open_gripper()
@@ -132,10 +193,10 @@ class Agent():
         #     self.ready_hand()
 
     def put_paddle_position(self, acc=0.2, vel=0.2, wait=True):
-        self.movej('right', self.idle_joint['right']['put_paddle'], acc=acc, vel=vel, wait=wait)
+        self.movej('right', self.poses['right']['put_paddle'], acc=acc, vel=vel, wait=wait)
 
     def put_knife_position(self, acc=0.2, vel=0.2, wait=True):
-        self.movej('right', self.idle_joint['right']['put_knife'], acc=acc, vel=vel, wait=wait)
+        self.movej('right', self.poses['right']['put_knife'], acc=acc, vel=vel, wait=wait)
 
     def ready_hand(self):
         try:
@@ -164,7 +225,7 @@ class Agent():
         print 'L_B_W:\n', L_B_W
 
         if obj == 'pan_handle_handle':
-            self.movej(side, self.integrade_joint)
+            self.movej(side, self.poses[side]['stopover'])
 
         for L_O_W in self.L_O_W_dict[obj]:
             target_6d_pos = self.get_target_6d_pos(side, L_B_W, L_C_O, L_O_W)

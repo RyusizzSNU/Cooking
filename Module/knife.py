@@ -2,7 +2,6 @@ import time
 import math
 import utils
 import numpy as np
-from agent import Agent
 
 def manipulate_knife(agent, food, pickup_knife=True):
     if pickup_knife:
@@ -67,9 +66,3 @@ def turnback_knife(agent):
 
     agent.moveD('right', [0, 0, 0.25], relative=True)
     agent.idle('right', view='top2')
-
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('right')
-    #manipulate_knife(agent, 'onion', pickup_knife=True)
-    turnback_knife(agent)

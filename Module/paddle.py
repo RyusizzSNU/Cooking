@@ -2,7 +2,6 @@ import time
 import math
 import utils
 import numpy as np
-from agent import Agent
 
 def manipulate_paddle(agent):
     agent.idle('left', view='top2', start_closed=True)
@@ -55,9 +54,3 @@ def manipulate_paddle(agent):
     agent.moveD('right', [0, 0, 0.25], relative=True)
     agent.idle('right', view='top2')
 
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('left')
-    time.sleep(1)
-    agent.ready('right')
-    manipulate_paddle(agent)

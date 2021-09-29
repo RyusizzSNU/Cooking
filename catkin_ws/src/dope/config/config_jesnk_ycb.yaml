@@ -21,10 +21,22 @@ weights: {
     "switch":"package://dope/weights/train_ver4/switch.pth",
     "paddle_handle": "package://dope/weights/train_ver4/paddle_handle.pth",
     "spam": "package://dope/weights/train_ver5/spam.pth",
+    "cracker":"package://dope/weights/cracker_60.pth",
+    "gelatin":"package://dope/weights/gelatin_60.pth",
+    "meat":"package://dope/weights/meat_20.pth",
+    "soup":"package://dope/weights/soup_60.pth",
+    "sugar":"package://dope/weights/sugar_60.pth",
+    "popcorn" : "package://dope/weights/popcorn.pth"
 }
 
 # Cuboid dimension in cm x,y,z
 dimensions: {
+    "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
+    "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
+    "meat": [10.164673805236816,8.3542995452880859,5.7600898742675781],
+    #"mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
+    "soup": [6.7659378051757813,10.185500144958496,6.771425724029541],
+    "sugar": [9.267730712890625,17.625339508056641,4.5134143829345703],
     "pan_handle_handle": [ 300, 76, 166 ],
     "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],
     "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
@@ -37,7 +49,8 @@ dimensions: {
     "switch": [ 0.69999998807907104, 4.9983000755310059, 5 ],
     "paddle_handle": [ 10.300000190734863, 7.7635998725891113, 7.9991002082824707 ],
 #    "knife_holder": [ 340, 160, 300 ],
-    "spam": [ 4.4000000953674316, 6.4566998481750488, 8 ]
+    "spam": [ 4.4000000953674316, 6.4566998481750488, 8 ],
+    "popcorn" : [ 8.4976997375488281, 3.825200080871582, 12.649200439453125 ]
 }
 
 class_ids: {
@@ -54,6 +67,13 @@ class_ids: {
     "paddle_handle": 10,
 #    "knife_holder": 2,
     "spam": 11,
+    "cracker": 12,
+    "gelatin": 13,
+    "meat": 14,
+    #"mustard": 15,
+    "soup":16,
+    "sugar": 17,
+    "popcorn": 18
 }
 
 draw_colors: {
@@ -70,6 +90,13 @@ draw_colors: {
     "paddle_handle": [128, 128, 128], # gray
 #    "knife_holder": [13, 255, 128], # green
     "spam": [255, 101, 0], # orange
+    "cracker": [255, 110, 150],
+    "gelatin": [255, 150, 110],
+    "meat": [255, 110, 150],
+    #"mustard": 15,
+    "soup":[255, 110, 150],
+    "sugar": [255, 110, 150],
+    "popcorn": [0,0,0]
 }
 
 # optional: provide a transform that is applied to the pose returned by DOPE
@@ -108,6 +135,13 @@ mesh_scales: {
     "switch": 0.01,
     "paddle_handle": 0.01,
     "spam": 0.01,
+    "cracker": 0.01,
+    "gelatin": 0.01,
+    "meat": 0.01,
+    "soup": 0.01,
+    "sugar": 0.01,
+    "popcorn":0.01
+
 }
 
 # Config params for DOPE
@@ -129,18 +163,33 @@ activities: {
         "switch": False,
         "paddle_handle": False,
         "spam": False,
+        "cracker": False,
+        "gelatin": False,
+        "meat": False,
+        "soup": False,
+        "sugar": False,
+        "popcorn" : False
     },
+
     "R": {
-        "pan_handle_handle": False,
-        "carrot": False,
-        "onion": False,
-        "oil_bowl": False,
-        "rice_bowl": False,
-        "salt_bowl": False,
-        "board_handle": False,
-        "knife_handle": False,
-        "switch": False,
-        "paddle_handle": False,
-        "spam": False,
+        "pan_handle_handle": True,
+        "carrot": True,
+        "onion": True,
+        "oil_bowl": True,
+        "rice_bowl": True,
+        "salt_bowl": True,
+        "board_handle": True,
+        "knife_handle": True,
+        "switch": True,
+        "paddle_handle": True,
+        "spam": True" ,
+        "cracker" : True,
+        "gelatin": True,
+        "meat": True,
+        "soup": True,
+        "sugar": True,
+        "popcorn" :True 
+
     }
 }
+

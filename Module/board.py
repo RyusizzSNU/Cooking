@@ -1,6 +1,5 @@
 import time
 import math
-from agent import Agent
 import utils
 import numpy as np
 
@@ -55,9 +54,3 @@ def manipulate_board(agent):
     agent.open_gripper()
     agent.moveD('left', [-0.2, 0, 0], relative=True)
 
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('left')
-    time.sleep(2)
-    agent.ready('right')
-    manipulate_board(agent)

@@ -8,3 +8,5 @@
 catkin_ws/devel/
 catkin_ws/build/
 *.pyc
+*.swp
+

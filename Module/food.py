@@ -1,5 +1,4 @@
 import math
-from agent import Agent
 import utils
 import time
 import rospy
@@ -58,7 +57,3 @@ def turnback_food(agent, j):
     agent.open_gripper()
     agent.moveD('left', [0, 0, 0.4], relative=True)
 
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('left')
-    manipulate_food(agent, 'spam')

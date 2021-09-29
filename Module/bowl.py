@@ -1,5 +1,4 @@
 import math
-from agent import Agent
 import utils
 import time
 
@@ -46,7 +45,3 @@ def manipulate_bowl(agent, obj):
     agent.open_gripper()
     agent.moveD('left', [0, 0, 0.2], relative=True)
 
-if __name__ == '__main__':
-    agent = Agent()
-    agent.ready('left')
-    manipulate_bowl(agent, 'salt_bowl')
