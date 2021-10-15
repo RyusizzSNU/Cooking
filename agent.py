@@ -10,7 +10,8 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 import utils
 from dope_reader import DopeReader
-from hand import AllegroHandController
+from AllegroHand import AllegroHandController
+from HYHand import HYHandController
 from Module.board import manipulate_board
 from Module.bowl import manipulate_bowl
 from Module.food import manipulate_food, turnback_food
@@ -109,6 +110,7 @@ class Agent():
 
     def read_poses(self):
         self.poses = {}
+        self.hand_poses = []
         with open('./poses.csv', 'r') as f:
             lines = f.readlines()
             for line in lines[1:-1]:
@@ -121,6 +123,15 @@ class Agent():
                     joint.append(float(tokens[i]))
                     assert float(tokens[i]) == self.idle_joint[side][name][i-2]
                 self.poses[side][name] = joint
+        with open('./hand_poses.csv', 'r') as f:
+            lines = f.readlines()
+            for line in lines[1:-1]:
+                tokens = line.split(',')
+                name = tokens[0]
+                joint = []
+                for i in range(1, 17):
+                    joint.append(float(tokens[i]))
+                self.hand_poses.append(joint)
     
     def get_actions_dict(self):
         actions_dict = [
@@ -169,7 +180,8 @@ class Agent():
             # self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'], payload=0.25, speed=50, force=10)
         if side == 'right':
             self.robot['right'] = urx.Robot("192.168.1.109")
-            # self.hand = AllegroHandController()
+            self.hand = HYHandController()
+            self.hand.connect()
 
         print 'Robot tcp:', np.array(self.robot[side].getl())
         print 'Robot joints:', np.array(self.robot[side].getj())
@@ -197,15 +209,6 @@ class Agent():
 
     def put_knife_position(self, acc=0.2, vel=0.2, wait=True):
         self.movej('right', self.poses['right']['put_knife'], acc=acc, vel=vel, wait=wait)
-
-    def ready_hand(self):
-        try:
-            self.hand.lib_cmd('home')
-            self.hand.movej(joint_num=12, val=1.5)
-            self.hand.movej(joint_num=14, val=0)
-            self.hand.movej(joint_num=15, val=0)
-        except AttributeError:
-            pass
 
     # Reach the given object.
     # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
@@ -303,6 +306,9 @@ class Agent():
     def gripper_action(self, val):
         self.gripper.gripper_action(val)
         time.sleep(0.2)
+
+    def move_hand(self, val, relative=True):
+        self.hand.move_joint(val, relative)
 
     # Move in Desk Coordinate system(as if the robot base is at desk corner, axis aligned)
     # Also handles 3-dimensional input(as position)

@@ -1,6 +1,7 @@
 import rospy
 from std_msgs.msg import Float32, String
 from sensor_msgs.msg import JointState
+import numpy as np
 
 
 class AllegroHandController(object):
@@ -38,25 +39,26 @@ class AllegroHandController(object):
         next_position = JointState()
         name = ['joint_' + str(i) + '.0' for i in range(16)]
         velocity = [-3.493018918753451, -40.103029702888406, 120.73586545387582, -36.63389744821353, 252.3295750549728, -115.97092579748497, -7.3510231788609115, 56.5863491018089, -111.2786242991041, -3.362467567000076, -22.549172696996294, 53.08861330082114, 92.40275207505158, -145.99928833604542, -53.02169036962198, 5.906627932489557]
-        position = [-0.2186851423965558, 1.5572975886568314, -0.28873799746659295, -0.27224139196685554,
-                    -0.02539896673373966, 1.4753744333800771, 0.16015237484164643, -0.2642465593939885,
-                    -0.026517322780583195, 1.3449399056894413, 0.34697985770819895, -0.2732642937066182,
-                    1.44888367057904, 0.5894044733554243, 0.46002011041744784, -0.27192144040916066]
+        position = [-0.03169593538969933, 1.4220984148287619, 0.7101407747942525, 1.1176176912241522, 0.13346401524068366, 1.5280307021719746, 0.49009169687580434, 1.2479782045877417, 0.25531029257282734, 1.634564959105132, 0.3227728848421474, 1.3604674336824014, 1.5428447454559708, 0.15895744413651658, 0.4481706633437269, -0.15737117478512253]
+        effort = np.array([0.5, 1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1.2, 0.5, 0.5, 0.5])
+        effort = effort * 0.75
 
         next_position.name.extend(name)
         # next_position.velocity.extend(velocity)
         next_position.position.extend(position)
+        next_position.effort.extend(effort)
+
         self.joint_cmd(next_position)
 
-        next_position = JointState()
-        position = [-0.2548479719202039, 1.580944340340068, 1.5098884528535403, 1.3263597740978301,
-                    -0.07431528095025002, 1.673592454066377, 1.49432093538029, 1.2808780340699661, 0.15803696150783358,
-                    1.6904838961666842, 1.394033798795872, 1.5625461044099245, 1.3645063861341296, 0.2950326750005964,
-                    0.19242855784779547, 1.6112683485881383]
-        next_position.name.extend(name)
-        next_position.position.extend(position)
-        # next_position.velocity.extend(velocity)
-        self.joint_cmd(next_position)
+        # next_position = JointState()
+        # position = [-0.2548479719202039, 1.580944340340068, 1.5098884528535403, 1.3263597740978301,
+        #             -0.07431528095025002, 1.673592454066377, 1.49432093538029, 1.2808780340699661, 0.15803696150783358,
+        #             1.6904838961666842, 1.394033798795872, 1.5625461044099245, 1.3645063861341296, 0.2950326750005964,
+        #             0.19242855784779547, 1.6112683485881383]
+        # next_position.name.extend(name)
+        # next_position.position.extend(position)
+        # # next_position.velocity.extend(velocity)
+        # self.joint_cmd(next_position)
 
 
 
@@ -80,6 +82,7 @@ if __name__ == '__main__':
         hand_controller = AllegroHandController()
         hand_controller.lib_cmd('home')
         hand_controller.grab()
+        hand_controller.lib_cmd('envelop')
     else:
         hand_state_controller = AllegroHandStateController()
     rospy.spin()

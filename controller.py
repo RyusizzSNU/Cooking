@@ -25,6 +25,7 @@ class Controller:
         self.state = State.MAIN
         self.cursor = 1
         self.side = 'left'
+        self.hand_control = False
         self.move_scale = 1
 
         self.selected_pose = None
@@ -103,6 +104,19 @@ class Controller:
             pygame.K_9: ['j', [0, 0, 0, 0, -0.01, 0]], pygame.K_0: ['j', [0, 0, 0, 0, 0.01, 0]],
             pygame.K_o: ['j', [0, 0, 0, 0, 0, -0.01]], pygame.K_p: ['j', [0, 0, 0, 0, 0, 0.01]],
         }
+        qwerty_key_list1 = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, pygame.K_u, pygame.K_i, pygame.K_o, pygame.K_p]
+        qwerty_key_list2 = [pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_f, pygame.K_g, pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_SEMICOLON]
+
+        self.key_control_dict_hand = {}
+        for i in range(8):
+            joint = np.zeros(16)
+            joint[i] = 1
+            self.key_control_dict_hand[qwerty_key_list1[i]] = joint
+
+            joint = np.zeros(16)
+            joint[i+8] = 1
+            self.key_control_dict_hand[qwerty_key_list2[i]] = joint
+
 
     def move(self, side, command, vec, relative):
         if command == 'd':
@@ -197,10 +211,26 @@ class Controller:
         elif self.state == State.CONTROL:
             if self.state == State.CONTROL:
                 keys = pygame.key.get_pressed()
-                for key in self.key_control_dict:
-                    if keys[key]:
-                        fp = self.key_control_dict[key]
-                        self.move(self.side, fp[0], np.array(fp[1]) * self.move_scale, True)
+                ctrl = keys[pygame.K_LCTRL]
+
+                if self.hand_control:
+                    for i in range(len(self.agent.hand_poses)):
+                        if keys[pygame.K_1 + i]:
+                            self.agent.move_hand(self.agent.hand_poses[i], relative=False)
+
+                    for key in self.key_control_dict_hand:
+                        if keys[key]:
+                            joint = self.key_control_dict_hand[key]
+                            if ctrl:
+                                joint = -joint
+                            self.agent.move_hand(joint * self.move_scale * 0.33, relative=True)
+
+                else:
+                    for key in self.key_control_dict:
+                        if keys[key]:
+                            fp = self.key_control_dict[key]
+                            self.move(self.side, fp[0], np.array(fp[1]) * self.move_scale, True)
+
         elif self.state == State.TEST_ACTION:
             if self.selected_action is not None and self.selected_action.current_param is None:
                 try:
@@ -224,6 +254,7 @@ class Controller:
         if self.state == State.CONTROL:
             self.display_text('Move scale : ' + str(self.move_scale), [200, 0], self.text_size)
             self.display_text('Arm : ' + str(self.side), [450, 0], self.text_size)
+            self.display_text('Mode : ' + ('Hand' if self.hand_control else 'Arm'), [600, 0], self.text_size)
             self.display_image(self.control_explain_image[self.side], [0, self.text_size])
         pos = [0, self.text_size]
         for i in range(len(text_action_list)):
@@ -276,10 +307,16 @@ class Controller:
                     elif event.key == pygame.K_UP:
                         if self.cursor - 1 > 0:
                             self.cursor -= 1
+
+                    if event.key == pygame.K_PERIOD:
+                        print(self.agent.hand.target)
+                        print(self.agent.hand.joint)
                     
                     if self.state == State.CONTROL:
                         if event.key == pygame.K_SPACE:
                             self.side = 'right' if self.side == 'left' else 'left'
+                        elif event.key == pygame.K_TAB:
+                            self.hand_control = not self.hand_control
                         elif event.key == pygame.K_MINUS:
                             self.move_scale /= 2
                         elif event.key == pygame.K_EQUALS:
@@ -300,5 +337,6 @@ class Controller:
 if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
+    agent.ready('right')
     controller = Controller(agent)
     controller.run()
