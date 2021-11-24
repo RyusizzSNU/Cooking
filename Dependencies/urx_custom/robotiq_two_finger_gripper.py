@@ -227,7 +227,6 @@ class Robotiq_Two_Finger_Gripper(object):
 
     def open_gripper(self):
         self.gripper_action(0)
-#	print("xxx")
 
     def close_gripper(self):
         self.gripper_action(255)

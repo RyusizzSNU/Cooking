@@ -39,7 +39,11 @@ class HYHandController():
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(self.robot_address)
+        try:
+            self.sock.connect(self.robot_address)
+        except Exception as e:
+            print('Failed to connect Hand')
+            return
         self._send_zero_msg()
 
     def _send_zero_msg(self):
@@ -86,12 +90,10 @@ class HYHandController():
         prev_joint = np.zeros(16)
         start_time = time.time()
         not_moving = False
-        
         if relative:
             self.target = self.target + val
         else:
             self.target = val
-
         while True:
             readied, _, _ = select.select([self.sock], [], [])
             #msg = self.sock.recv(32)
@@ -105,7 +107,7 @@ class HYHandController():
                 not_moving = False
                 start_time = time.time()
 
-            if not_moving and time.time() - start_time > 0.5:
+            if not_moving and time.time() - start_time > 0.2:
                 break
            
             prev_joint = self.joint
@@ -172,73 +174,6 @@ class HYHandController():
                                 self.move_joint(target, relative=False)
                                 print(target)
 
-        self.sock.close()
-
-    def mainLoop(self):
-        pygame.init()
-        screen = pygame.display.set_mode((800, 800))
-
-        target = self.target5
-
-        self._send_zero_msg()
-        np.set_printoptions(precision=2)
-
-        val = 1 / 3.
-        running = True
-        i = 0
-        prev_p = np.zeros(16)
-        while running:
-            keys = pygame.key.get_pressed()
-            shift = keys[pygame.K_LSHIFT]
-            ctrl = keys[pygame.K_LCTRL]
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-                if event.type == pygame.KEYDOWN:
-
-                    if event.key == pygame.K_a:
-                        target = self.target1
-                        break
-                    elif event.key == pygame.K_s:
-                        target = self.target2
-                        break
-                    elif event.key == pygame.K_d:
-                        target = self.target3
-                        break
-                    elif event.key == pygame.K_f:
-                        target = self.target4
-                        break
-                    elif event.key == pygame.K_g:
-                        target = self.target5
-                        break
-
-                    elif event.key == pygame.K_MINUS:
-                        val /= 2
-                        print(val)
-                    elif event.key == pygame.K_EQUALS:
-                        val *= 2
-                        print(val)
-
-                    for i in range(8):
-                        if event.key == pygame.K_1 + i:
-                            if shift:
-                                target[i + 8] += -val if ctrl else val
-                                print(target)
-                            else:
-                                target[i] += -val if ctrl else val
-                                print(target)
-            readied, _, _ = select.select([self.sock], [], [])
-            #msg = self.sock.recv(32)
-            msg = self._recv_all(32)
-            p = self._msg_to_pos(msg)
-
-            prev_p = p
-
-            self._send_target_msg(target, p)
-            i += 1
-            if i % 1 == 0:
-                print(p - prev_p)
         self.sock.close()
 
 if __name__ == '__main__':

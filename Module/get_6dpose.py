@@ -44,6 +44,8 @@ class DopeController(object):
     def rice_bowl_callback(self, data):
         self.rice_bowl_pose = data.pose
 
+    def kettle_handle_callback(self, data):
+        self.kettle_handle_pose = data.pose
 
     def get_pose(self, object_name):
         try:
@@ -61,6 +63,10 @@ class DopeController(object):
                 return self.salt_bowl_pose.position, self.salt_bowl_pose.orientation
             elif object_name == 'rice_bowl':
                 return self.rice_bowl_pose.position, self.rice_bowl_pose.orientation
+            elif object_name == 'kettle_handle':
+                return self.kettle_handle_pose.position, self.kettle_handle_pose.orientation
+
+
         except Exception as e:
             print(e)
             print('[ERROR] Object is not detected yet!!!')

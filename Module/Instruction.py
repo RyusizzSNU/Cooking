@@ -5,12 +5,22 @@ class Param:
         self.name_value_dict = name_value_dict
         self.current_name = None
 
-class Action:
+    def copy(self):
+        return Param(self.display_name, self.name_value_dict)
+
+
+class Instruction:
     def __init__(self, display_name, function, params):
         self.display_name = display_name
         self.function = function
         self.params = params
         self.cursor = 0
+
+    def copy(self):
+        if self.__class__ == Instruction:
+            return Instruction(self.display_name, self.function, [p.copy() for p in self.params])
+        else:
+            return self.__class__()
 
     @property
     def all_params_assigned(self):

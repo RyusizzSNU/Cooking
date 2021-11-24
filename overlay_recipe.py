@@ -5,7 +5,8 @@ from jsk_rviz_plugins.msg import OverlayMenu
 
 class RecipeController(object):
     def __init__(self):
-        self.recipe = [
+        self.recipe = ["No Recipe"]
+        '''self.recipe = [
           "1. chop the spam",
         #  "put the potato",
           "2. turn on the induction",
@@ -18,7 +19,7 @@ class RecipeController(object):
           "8. put the salt",
           "9. fry for 30 sec",
           "10. turn off the induction"
-        ]
+        ]'''
         self.p = rospy.Publisher("recipe", OverlayMenu, queue_size=1)
         # self.r = rospy.Rate(10)
         # self.current_index = 0
@@ -39,6 +40,14 @@ class RecipeController(object):
         self.menu.bg_color.b = 0.0
         self.menu.bg_color.a = 1.0
         self.p.publish(self.menu)
+
+    def set_instructions(self, instructions):
+        self.recipe = []
+        for i in range(len(instructions)):
+            inst = instructions[i]
+            self.recipe.append("%s. %s"%(i + 1, inst[0] + ' ' + inst[1]))
+        self.menu.menus = self.recipe
+        self.set_index(0)
 
     def set_index(self, index):
         self.menu.current_index = index

@@ -22,6 +22,12 @@ class DopeReader(object):
         rospy.Subscriber('/dope/%s/pose_board_handle'%name, PoseStamped, self.board_handle_callback)
         rospy.Subscriber('/dope/%s/pose_switch'%name, PoseStamped, self.switch_callback)
         rospy.Subscriber('/dope/%s/pose_spam'%name, PoseStamped, self.spam_callback)
+        rospy.Subscriber('/dope/%s/pose_kettle_handle' % name, PoseStamped, self.kettle_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_pepper_bowl' % name, PoseStamped, self.pepper_bowl_callback)
+        rospy.Subscriber('/dope/%s/pose_ladle_handle' % name, PoseStamped, self.ladle_handle_callback)
+        rospy.Subscriber('/dope/%s/pose_noodle' % name, PoseStamped, self.noodle_callback)
+        rospy.Subscriber('/dope/%s/pose_ham' % name, PoseStamped, self.ham_callback)
+
         # rospy.Subscriber('/dope/rgb_points', Image, self.dope_image_callback
 
     def board_handle_callback(self, data):
@@ -67,6 +73,26 @@ class DopeReader(object):
     def spam_callback(self, data):
         p, o = data.pose.position, data.pose.orientation
         self.obj_poses['spam'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
+    def kettle_handle_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['kettle_handle'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
+    def pepper_bowl_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['pepper_bowl'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
+    def ladle_handle_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['ladle_handle'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
+    def noodle_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['noodle'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
+
+    def ham_callback(self, data):
+        p, o = data.pose.position, data.pose.orientation
+        self.obj_poses['ham'] = [p.x, p.y, p.z, o.x, o.y, o.z, o.w]
 
     def reset(self):
         self.obj_poses = {}

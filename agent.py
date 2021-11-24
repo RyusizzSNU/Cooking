@@ -5,21 +5,24 @@ import math
 import os
 
 #from typing import Dict, List
-from urx.robotiq_two_finger_gripper import Robotiq_Two_Finger_Gripper
+from Dependencies.urx_custom.robotiq_two_finger_gripper import Robotiq_Two_Finger_Gripper
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 import utils
 from dope_reader import DopeReader
 from AllegroHand import AllegroHandController
 from HYHand import HYHandController
-from Module.board import manipulate_board
-from Module.bowl import manipulate_bowl
-from Module.food import manipulate_food, turnback_food
-from Module.knife import manipulate_knife, turnback_knife
-from Module.paddle import manipulate_paddle
-from Module.switch import manipulate_switch
-from Module.Action import Action, Param
+from Module.Take import Take
+from Module.Pour import Pour
+from Module.Put import Put
+from Module.Hold import Hold
+from Module.Sprinkle import Sprinkle
+from Module.Cut import Cut
+from Module.Mix import Mix
+from Module.Turn import Turn
+import json
 
+from collections import OrderedDict
 
 '''
 Definitions:
@@ -30,70 +33,11 @@ Definitions:
     B : robot base
     D : desk 
 '''
+
+
 class Agent():
-    idle_joint = {
-        'left' : {
-            'top' : [-0.3813, -4.0254, 1.2768, 4.6921, -2.2541, -2.6285],
-            'lateral' : [0.3382, -3.028,   1.5124,  3.4266, -3.9868, -1.1204],
-            'top2' : [-0.2033, -4.1432,  0.2977,  5.6389, -2.3075, -2.857],
-            'stopover': [0.0945, -3.3202,0.9582, 4.0455, -3.5693, -2.9357]
-        },
-        'right' : {
-            'top' : [-2.3372, -4.3113, 0.9498, -0.7260, -1.0605, 1.3825],
-            'top2' : [-2.0728, -4.4702,  1.1529, -1.1107, -1.3792,  1.13  ],
-            'board' : [-2.2879, -4.511,   1.3044, -0.8525, -1.0675, 1.2349],
-            'put_knife' : [-2.3869, -3.9377,  2.2037, 3.1041, -1.861, -4.7895],
-            'put_paddle' : [-2.6736, -3.7647,  1.5082, -2.5686, -1.9088, 1.7905]
-        }
-    }
-
-    # Camera to Wrist transformation matrix
-    L_W_C = {'left' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.12], [0, 0, 1, 0.02], [0, 0, 0, 1]]),
-            'right' : np.array([[-1, 0, 0, 0.05], [0, -1, 0, 0.085], [0, 0, 1, 0.03], [0, 0, 0, 1]])}
-
-    L_B_D = {'left' : np.array([[0, 1, 0, 0.25], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 0.2121], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 0.6364], [0, 0, 0, 1]]),
-             'right' : np.array([[0, -1, 0, -0.25], [- 1 / math.sqrt(2), 0, - 1 / math.sqrt(2), 1.0323], [1 / math.sqrt(2), 0, - 1 / math.sqrt(2), -0.1838], [0, 0, 0, 1]])}
-
     objects = ['carrot', 'onion', 'oil_bowl', 'rice_bowl', 'salt_bowl',
-               'board_handle', 'knife_handle', 'paddle_handle', 'pan_handle_handle', 'switch', 'spam']
-
-    # Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping
-    L_O_W_dict = {
-        'carrot': [np.array([[0, 0, -1, 0.11], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])],
-        'onion' : [np.array([[0, 0, -1, 0.13], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])],
-        'pan_handle_handle': [np.array([[0, 0, -1, 0.25], [1, 0, 0, -0.02], [0, -1, 0, -0.03], [0, 0, 0, 1]]),
-            np.array([[0, 0, -1, 0.17], [1, 0, 0, -0.02], [0, -1, 0, -0.03], [0, 0, 0, 1]])],
-        'rice_bowl' : [np.array([[0, 0, 1, -0.27], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.17], [0, 1, 0, -0.09], [-1, 0, 0, 0], [0, 0, 0, 1]])],
-        'oil_bowl' : [np.array([[0, 0, 1, -0.21], [0, 1, 0, -0.03], [-1, 0, 0, 0], [0, 0, 0, 1]])],
-        'salt_bowl' : [np.array([[0, 0, 1, -0.30], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.24], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])],
-        'board_handle' : [np.array([[0, 0, 1, -0.16], [0, -1, 0, 0.0], [1, 0, 0, -0.005], [0, 0, 0, 1]])],
-        'knife_handle' :
-            [np.array([[0, 0, 1, -0.20], [-1, 0, 0, 0.09], [0, -1, 0, -0.15], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.20], [-1, 0, 0, 0.08], [0, -1, 0, -0.075], [0, 0, 0, 1]]),
-            np.array([[0, 0, 1, -0.14], [-1, 0, 0, 0.08], [0, -1, 0, -0.075], [0, 0, 0, 1]])],
-        'paddle_handle' :
-            [np.array([[1, 0, 0, -0.18], [0, 0, -1, 0.16], [0, 1, 0, 0.16], [0, 0, 0, 1]]),
-            np.array([[1, 0, 0, -0.05], [0, 0, -1, 0.16], [0, 1, 0, 0.16], [0, 0, 0, 1]]),
-            np.array([[1, 0, 0, -0.05], [0, 0, -1, 0.08], [0, 1, 0, 0.06], [0, 0, 0, 1]])],
-        'switch' : [np.array([[0, 0, 1, -0.16], [0, -1, 0, 0.02], [1, 0, 0, 0], [0, 0, 0, 1]])],
-        'spam' : [np.array([[1, 0, 0, 0], [0, 0, -1, 0.135], [0, 1, 0, -0.0], [0, 0, 0, 1]])]
-    }
-
-    dope_scale_dict = {
-        'board_handle' : 1,
-        'paddle_handle' : 1,
-        'knife_handle' : 1.245,
-        'spam' : 1.08, # 1.14
-        'switch' : 1.18,
-        'oil_bowl' : 0.04878,
-        'rice_bowl' : 0.04968,
-        'carrot' : 0.046,
-        'onion' : 0.0518, #0.04930,
-        'others' : 0.05
-    }
-
+               'board_handle', 'knife_handle', 'paddle_handle', 'pan_handle_handle', 'switch', 'spam', 'kettle_handle']
     def __init__(self):
         # robot
         np.set_printoptions(precision=4)
@@ -101,6 +45,8 @@ class Agent():
         self.robot = {}
         self.dope_reader = {'left' : DopeReader('L'), 'right' : DopeReader('R')}
         self.read_poses()
+        self.read_transforms()
+        self.read_trajectories()
 
         for obj in self.objects:
             if obj not in self.dope_scale_dict:
@@ -110,72 +56,111 @@ class Agent():
 
     def read_poses(self):
         self.poses = {}
-        self.hand_poses = []
+        self.hand_poses = OrderedDict()
         with open('./poses.csv', 'r') as f:
             lines = f.readlines()
-            for line in lines[1:-1]:
-                tokens = line.split('\t')
+            for line in lines[1:]:
+                tokens = line.split(',')
                 side, name = tokens[0], tokens[1]
                 if side not in self.poses:
-                    self.poses[side] = {}
+                    self.poses[side] = OrderedDict()
                 joint = []
                 for i in range(2, 8):
                     joint.append(float(tokens[i]))
-                    assert float(tokens[i]) == self.idle_joint[side][name][i-2]
                 self.poses[side][name] = joint
         with open('./hand_poses.csv', 'r') as f:
             lines = f.readlines()
-            for line in lines[1:-1]:
+            for line in lines[1:]:
                 tokens = line.split(',')
                 name = tokens[0]
                 joint = []
                 for i in range(1, 17):
                     joint.append(float(tokens[i]))
-                self.hand_poses.append(joint)
-    
-    def get_actions_dict(self):
-        actions_dict = [
-            Action('Manipulate Board', manipulate_board, []),
-            Action('Manipulate Bowl', manipulate_bowl, [Param('Object', {
-                    'Rice Bowl' : 'rice_bowl',
-                    'Salt Bowl' : 'salt_bowl',
-                    'Oil Bowl' : 'oil_bowl'
-                })
-            ]),
-            Action('Manipulate Food', manipulate_food, [Param('Object', {
-                    'Onion' : 'onion',
-                    'Spam' : 'spam',
-                    'Carrot' : 'carrot'
-                })
-            ]),
-            Action('Manipulate Knife', manipulate_knife, [Param('Food', {
-                    'Onion' : 'onion',
-                    'Spam' : 'spam',
-                    'Carrot' : 'carrot'
-                }), Param('Start picking up knife', {
-                    'Yes' : True,
-                    'No' : False
-                })
-            ]),
-            Action('Manipulate Paddle', manipulate_paddle, []),
-            Action('Manipulate Switch', manipulate_switch, [Param('Direction', {
-                    'Clockwise' : True,
-                    'Counterclockwise' : False
-                })
-            ])
-        ]
-        return actions_dict
+                self.hand_poses[name] = joint
+
+    def read_transforms(self):
+        self.L_W_C = {}
+        self.L_B_D = {}
+        self.L_O_W_dict = {}
+        self.dope_scale_dict = {}
+
+        with open('./transforms.csv', 'r') as f:
+            lines = f.readlines()
+            for i in range(len(lines)):
+                line = lines[i].replace('\n', '')
+                i += 1
+                if line == '':
+                    continue
+                tokens = line.split(',')
+
+                # L_W_C : Camera to Wrist transformation matrix
+                # L_B_D : Robot Base to Desk transformation matrix
+                # L_O_W : Appropriate wrist position and orientation(in affine matrix form) relative to object for gripping. List for sequential movement
+
+                if tokens[0] == 'L_W_C' or tokens[0] == 'L_B_D' or tokens[0] == 'L_O_W':
+                    n = int(tokens[2]) if len(tokens) >= 3 else None
+                    if tokens[0] == 'L_W_C':
+                        dic = self.L_W_C
+                    elif tokens[0] == 'L_B_D':
+                        dic = self.L_B_D
+                    else:
+                        dic = self.L_O_W_dict
+
+                    if n is None:
+                        dic[tokens[1]] = np.array([[float(x) for x in lines[i + k].split(',')] for k in range(4)])
+                        i += 4
+                    else:
+                        dic[tokens[1]] = [np.array([[float(x) for x in lines[i + 4*j + k].split(',')] for k in range(4)]) for j in range(n)]
+                        i += 4 * n
+                elif tokens[0] == 'scale':
+                    self.dope_scale_dict[tokens[1]] = float(tokens[2])
+
+    def read_trajectories(self):
+        with open('./trajectories.json', 'r') as f:
+            self.obj_trajectories = json.loads(f.read())
+
+    def get_instructions(self):
+        if not hasattr(self, 'instructions'):
+            self.instructions = [
+                Take(),
+                Pour(),
+                Put(),
+                Sprinkle(),
+                Hold(),
+                Cut(),
+                Mix(),
+                Turn()
+            ]
+
+        return self.instructions
 
     def execute_instruction(self, instruction):
         verb, noun = instruction[0], instruction[1]
         print(verb + " " + noun)
+        if noun == 'kettle' or noun == 'knife' or noun == 'ladle':
+            noun = noun + '_handle'
+        if noun == 'pepper':
+            noun = 'pepper_bowl'
+        if noun == 'sausage':
+            noun = 'spam'
 
+        if noun == 'sauce':
+            noun = 'oil_bowl'
+
+        for inst in self.get_instructions():
+            if verb.lower() == inst.display_name.lower():
+                inst_ = inst.copy()
+                inst_.function(self, noun)
+                break
+
+    def state_description(self):
+        return 'Left : \n' + '\ttcp : %s\n'%np.array(self.robot['left'].getl()) + '\tjoints : %s\n'%np.array(self.robot['left'].getj()) + 'Right : \n' + '\ttcp : %s\n'%np.array(self.robot['right'].getl()) + '\tjoints : %s\n'%np.array(self.robot['right'].getj()) + '\thand target : %s\n'%self.hand.target + '\thand joint : %s\n'%self.hand.joint
 
     # Initialize robot, and go to idle
     def ready(self, side):
         if side == 'left':
             self.robot['left'] = urx.Robot("192.168.1.66")
-            self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'])
+            self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'], speed=200, force=20)
             self.gripper.force = 100
             # self.gripper = Robotiq_Two_Finger_Gripper(self.robot['left'], payload=0.25, speed=50, force=10)
         if side == 'right':
@@ -197,7 +182,11 @@ class Agent():
                 self.open_gripper()
 
         self.dope_reader[side].reset()
+        if side == 'right' and view == 'top3':
+            self.hand_action('grab')
         self.movej(side, self.poses[side][view], acc=acc, vel=vel, wait=wait)
+        if side == 'right' and view == 'top3':
+            self.hand_action('default')
 
         if side == 'left':
             self.open_gripper()
@@ -209,6 +198,13 @@ class Agent():
 
     def put_knife_position(self, acc=0.2, vel=0.2, wait=True):
         self.movej('right', self.poses['right']['put_knife'], acc=acc, vel=vel, wait=wait)
+
+    def memorize_object_trajectory(self, obj, trajectory):
+        if not hasattr(self, 'obj_trajectories'):
+            self.obj_trajectories = {}
+        self.obj_trajectories[obj] = trajectory
+        with open('trajectories.json', 'w') as f:
+            f.write(json.dumps(self.obj_trajectories))
 
     # Reach the given object.
     # The desired wrist 6d pos(in object coordinates) are given as a constant for each object,
@@ -292,23 +288,29 @@ class Agent():
         else:
             assert False, 'length of tcp input must be 3 or 6'
 
+    def movels(self, side, pos_list, acc=0.2, vel=0.2, wait=True):
+        self.robot[side].movels(pos_list, acc=acc, vel=vel, wait=wait)
+
     # Wrapper for gripper.open_gripper
     def open_gripper(self):
         self.gripper.open_gripper()
-        time.sleep(0.2)
+        time.sleep(1)
 
     # Wrapper for gripper.close_gripper
     def close_gripper(self):
         self.gripper.close_gripper()
-        time.sleep(0.2)
+        time.sleep(1)
 
-    # Wrapper for gripper.gripper_action. 0 for open and 255 for close.
+    # Wrapper for gripper.gripper_action. 0 for open and 1 for close.
     def gripper_action(self, val):
-        self.gripper.gripper_action(val)
-        time.sleep(0.2)
+        self.gripper.gripper_action(int(val * 255))
+        time.sleep(1)
 
     def move_hand(self, val, relative=True):
         self.hand.move_joint(val, relative)
+
+    def hand_action(self, name):
+        self.move_hand(self.hand_poses[name], relative=False)
 
     # Move in Desk Coordinate system(as if the robot base is at desk corner, axis aligned)
     # Also handles 3-dimensional input(as position)
@@ -322,7 +324,7 @@ class Agent():
                 self.movel(side, pos, acc=acc, vel=vel, wait=wait, relative=False)
         elif len(tcp) == 6:
             if relative:
-                current_tcp_D = utils.affine_to_tcp(self.base_to_desk(side, affine=utils.tcp_to_affine(tcp)))
+                current_tcp_D = utils.affine_to_tcp(self.base_to_desk(side, affine=utils.tcp_to_affine(self.getl(side))))
                 tcp_D = current_tcp_D + tcp
                 tcp_B = utils.affine_to_tcp(self.desk_to_base(side, affine=utils.tcp_to_affine(tcp_D)))
                 self.movel(side, tcp_B, acc=acc, vel=vel, wait=wait, relative=False)
@@ -341,7 +343,7 @@ if __name__ == '__main__':
     agent = Agent()
     agent.ready('left')
     agent.idle('left', view='top', start_closed=True)
-    agent.ready('right')
-    agent.idle('right', view='board', start_closed=True)
+    # agent.ready('right')
+    # agent.idle('right', view='board', start_closed=True)
 
     agent.close()

@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 import rospy
 from sensor_msgs.msg import CameraInfo, Image as ImageSensor_msg
-import multiprocessing as mp
+from overlay_recipe import RecipeController
 
 from cv_bridge import CvBridge
 
@@ -16,7 +16,7 @@ class State(Enum):
     MAIN = 0
     CONTROL = 1
     MOVE = 2
-    TEST_ACTION = 3
+    TEST_INSTRUCTION = 3
     TEST_RECIPE = 4
 
 class Controller:
@@ -29,18 +29,20 @@ class Controller:
         self.move_scale = 1
 
         self.selected_pose = None
-        self.selected_action = None
+        self.selected_instruction = None
         self.selected_params = []
         self.selected_recipe = None
-        self.selected_instruction = None
+        self.selected_instruction_index = None
+
+        self.recipe_controller = RecipeController()
 
         self.font = 'calibri'
         self.text_size = 30
-        self.screen_scale = 1
-        self.screen_size = np.array([1800, 800])
+        self.screen_scale = 1.6
+        self.screen_size = np.array([1600, 1200])
         self.bind_key_with_control()
 
-        self.control_explain_image = { 'left' : cv2.imread('left.png'), 'right' : cv2.imread('right.png') }
+        self.control_explain_image = { 'left' : cv2.imread('left.png'), 'right' : cv2.imread('right.png'), 'hand' : cv2.imread('hand.png') }
 
         self.cv_bridge = CvBridge()
         self.cam_connected = {'left' : False, 'right' : False}
@@ -48,7 +50,7 @@ class Controller:
         self.sides = ['left', 'right']
 
         pygame.init()
-        self.screen = pygame.display.set_mode((self.screen_size[0] * self.screen_scale, self.screen_size[1] * self.screen_scale))
+        self.screen = pygame.display.set_mode((int(self.screen_size[0] * self.screen_scale), int(self.screen_size[1] * self.screen_scale)))
         pygame.display.set_caption('Robot Controller')
 
     def check_connections(self):
@@ -70,9 +72,9 @@ class Controller:
         if font is None:
             font = self.font
 
-        fontObj = pygame.font.SysFont(font, size * self.screen_scale)
+        fontObj = pygame.font.SysFont(font, int(size * self.screen_scale))
         text = fontObj.render(text, True, color)
-        self.screen.blit(text, np.array(pos) * self.screen_scale)
+        self.screen.blit(text, (np.array(pos) * self.screen_scale).astype(int))
 
     def display_image(self, image, pos, size=None):
         h, w = image.shape[:2]
@@ -84,10 +86,10 @@ class Controller:
             size = np.array([size[0], h * size[0] / w])
         size = size * self.screen_scale
 
-        image = cv2.resize(image, (size[0], size[1]), interpolation=cv2.INTER_CUBIC)
+        image = cv2.resize(image, (int(size[0]), int(size[1])), interpolation=cv2.INTER_CUBIC)
         image = cv2.transpose(image)
         surf = pygame.surfarray.make_surface(image)
-        self.screen.blit(surf, np.array(pos) * self.screen_scale)
+        self.screen.blit(surf, (np.array(pos) * self.screen_scale).astype(int))
 
     def bind_key_with_control(self):
         self.key_control_dict = {
@@ -120,11 +122,11 @@ class Controller:
 
     def move(self, side, command, vec, relative):
         if command == 'd':
-            self.agent.moveD(side, vec, acc=1, vel=1, relative=relative, wait=False)
+            self.agent.moveD(side, vec, acc=0.2, vel=0.4, relative=relative, wait=False)
         elif command == 'j':
-            self.agent.movej(side, vec, acc=1, vel=1, relative=relative, wait=False)
+            self.agent.movej(side, vec, acc=0.2, vel=0.4, relative=relative, wait=False)
         elif command == 'l':
-            self.agent.movel(side, vec, acc=1, vel=1, relative=relative, wait=False)
+            self.agent.movel(side, vec, acc=0.2, vel=0.4, relative=relative, wait=False)
 
     def get_text_action_list(self):
         text_action_list = []
@@ -135,7 +137,7 @@ class Controller:
             text_action_list = [
                 ['Manual Control', transit_state, [State.CONTROL]],
                 ['Simple Movement', transit_state, [State.MOVE]],
-                ['Test Action', transit_state, [State.TEST_ACTION]],
+                ['Test Instruction', transit_state, [State.TEST_INSTRUCTION]],
                 ['Test Full Recipe', transit_state, [State.TEST_RECIPE]]
             ]
         elif self.state == State.CONTROL:
@@ -156,20 +158,20 @@ class Controller:
             for side in self.agent.poses:
                 for name in self.agent.poses[side]:
                     text_action_list.append([side + ' -> ' + name, select_pose, [side, name]])
-        elif self.state == State.TEST_ACTION:
-            actions_dict = agent.get_actions_dict()
-            def select_action(action):
-                self.selected_action = action
+        elif self.state == State.TEST_INSTRUCTION:
+            instructions_dict = agent.get_instructions()
+            def select_instruction(inst):
+                self.selected_instruction = inst
                 self.cursor = 1
 
             def select_param(param_name):
-                self.selected_action.assign_current_param(param_name)
+                self.selected_instruction.assign_current_param(param_name)
 
-            if self.selected_action is None:
-                for action in actions_dict:
-                    text_action_list.append([action.display_name, select_action, [action]])
+            if self.selected_instruction is None:
+                for inst in instructions_dict:
+                    text_action_list.append([inst.display_name, select_instruction, [inst.copy()]])
             else:
-                param_to_select = self.selected_action.current_param
+                param_to_select = self.selected_instruction.current_param
                 for param_name in param_to_select.name_value_dict:
                     text_action_list.append([param_to_select.display_name + " : " + param_name, select_param, [param_name]])
 
@@ -179,35 +181,41 @@ class Controller:
                 self.selected_recipe = recipe
                 self.instructions = read_recipe(recipe)
                 self.cursor = 1
+                self.recipe_controller.set_instructions(self.instructions)
 
-            def select_instruction(instruction):
-                self.selected_instruction = instruction
+            def select_instruction(index):
+                self.selected_instruction_index = index
 
             if self.selected_recipe is None:
                 for recipe in recipes:
                     text_action_list.append([recipe, select_recipe, [recipe]])
             else:
-                text_action_list.append(['Run all', select_instruction, ['RunAll']])
-                for instruction in self.instructions:
-                    text_action_list.append([instruction[0] + ' ' + instruction[1], select_instruction, [instruction]])
+                text_action_list.append(['Run all', select_instruction, [-1]])
+                for i in range(len(self.instructions)):
+                    instruction = self.instructions[i]
+                    text_action_list.append([instruction[0] + ' ' + instruction[1], select_instruction, [i]])
 
         return text_action_list
 
     def process_state(self):
         if self.state == State.MAIN:
             self.side = 'left'
+            self.hand_control = False
             self.selected_pose = None
-            self.selected_action = None
+            self.selected_instruction = None
             self.selected_params = []
             self.selected_recipe = None
             self.instructions = []
-            self.selected_instruction = None
+            self.selected_instruction_index = None
             
         elif self.state == State.MOVE:
             if self.selected_pose is not None:
-                self.move(self.side, 'j', self.agent.poses[self.side][self.selected_pose], False)
+                self.agent.idle(self.side, self.selected_pose)
+                #self.move(self.side, 'j', self.agent.poses[self.side][self.selected_pose], False)
+
                 self.state = State.MAIN
                 self.cursor = 1
+
         elif self.state == State.CONTROL:
             if self.state == State.CONTROL:
                 keys = pygame.key.get_pressed()
@@ -216,7 +224,7 @@ class Controller:
                 if self.hand_control:
                     for i in range(len(self.agent.hand_poses)):
                         if keys[pygame.K_1 + i]:
-                            self.agent.move_hand(self.agent.hand_poses[i], relative=False)
+                            self.agent.move_hand(self.agent.hand_poses.items()[i][1], relative=False)
 
                     for key in self.key_control_dict_hand:
                         if keys[key]:
@@ -231,21 +239,24 @@ class Controller:
                             fp = self.key_control_dict[key]
                             self.move(self.side, fp[0], np.array(fp[1]) * self.move_scale, True)
 
-        elif self.state == State.TEST_ACTION:
-            if self.selected_action is not None and self.selected_action.current_param is None:
+        elif self.state == State.TEST_INSTRUCTION:
+            if self.selected_instruction is not None and self.selected_instruction.current_param is None:
                 try:
-                    self.selected_action(self.agent)
-                except (AttributeError, TypeError):
+                    self.selected_instruction(self.agent)
+                except (AttributeError, TypeError) as e:
+                    print(e)
                     pass
                 self.state = State.MAIN
                 self.cursor = 1
         elif self.state == State.TEST_RECIPE:
-            if self.selected_recipe is not None and self.selected_instruction is not None:
-                if self.selected_instruction == 'RunAll':
-                    for instruction in self.instructions:
-                         agent.execute_instruction(instruction)
+            if self.selected_recipe is not None and self.selected_instruction_index is not None:
+                if self.selected_instruction_index == -1:
+                    for i in range(len(self.instructions)):
+                        self.recipe_controller.set_index(i)
+                        agent.execute_instruction(self.instructions[i])
                 else:
-                    agent.execute_instruction(self.selected_instruction)
+                    self.recipe_controller.set_index(self.selected_instruction_index)
+                    agent.execute_instruction(self.instructions[self.selected_instruction_index])
                 self.state = State.MAIN
                 self.cursor = 1
 
@@ -255,8 +266,19 @@ class Controller:
             self.display_text('Move scale : ' + str(self.move_scale), [200, 0], self.text_size)
             self.display_text('Arm : ' + str(self.side), [450, 0], self.text_size)
             self.display_text('Mode : ' + ('Hand' if self.hand_control else 'Arm'), [600, 0], self.text_size)
-            self.display_image(self.control_explain_image[self.side], [0, self.text_size])
+            if self.hand_control:
+                self.display_image(self.control_explain_image['hand'], [0, self.text_size + 100])
+
+                i = 0
+                for name in self.agent.hand_poses:
+                    self.display_text('%s. %s'%(i + 1, name), [(i // 4) * 200 + 20, (i % 4 + 1) * self.text_size], self.text_size)
+                    i += 1
+            else:
+                self.display_image(self.control_explain_image[self.side], [0, self.text_size + 100])
         pos = [0, self.text_size]
+        if self.state == State.MAIN:
+            self.display_text(', : load data    . : print joints', [450, 0], self.text_size)
+
         for i in range(len(text_action_list)):
             number = i if self.state == State.TEST_RECIPE and self.selected_recipe is not None else i + 1
 
@@ -267,15 +289,19 @@ class Controller:
             self.display_text(text, pos, self.text_size)
             pos[1] += self.text_size
 
-        if self.cam_connected[self.side]:
+        def display_dope(side, pos, size):
             try:
-                img = rospy.wait_for_message('dope/L/rgb_points', ImageSensor_msg, timeout=1)
+                img = rospy.wait_for_message('dope/%s/rgb_points'%side, ImageSensor_msg, timeout=1)
             except rospy.exceptions.ROSException:
                 img = None
-            
+
             if img is not None:
                 img = self.cv_bridge.imgmsg_to_cv2(img, "rgb8")
-                self.display_image(img, [1000, 0], [800, None])
+                self.display_image(img, pos, size)
+        if self.cam_connected['left']:
+            display_dope('L', [1001, 0], [None, 450])
+        if self.cam_connected['right']:
+            display_dope('R', [1001, 450], [None, 450])
 
     def run(self):
         clock = pygame.time.Clock()
@@ -289,6 +315,8 @@ class Controller:
             text_action_list = self.get_text_action_list()
             self.display(text_action_list)
 
+            keys = pygame.key.get_pressed()
+            ctrl = keys[pygame.K_LCTRL]
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.agent.close()
@@ -302,19 +330,31 @@ class Controller:
                         selected = self.cursor
 
                     elif event.key == pygame.K_DOWN:
+                        if ctrl:
+                            if self.cursor - 1 < len(text_action_list) - 10:
+                                self.cursor += 10
+
                         if self.cursor - 1 < len(text_action_list) - 1:
                             self.cursor += 1
                     elif event.key == pygame.K_UP:
                         if self.cursor - 1 > 0:
                             self.cursor -= 1
 
+                    if event.key == pygame.K_COMMA:
+                        try:
+                            self.agent.read_poses()
+                            self.agent.read_transforms()
+                            print('Read new poses and transforms info')
+                        except Exception as e:
+                            print('Failed to read new poses and transforms info')
+
                     if event.key == pygame.K_PERIOD:
-                        print(self.agent.hand.target)
-                        print(self.agent.hand.joint)
+                        print(self.agent.state_description())
                     
                     if self.state == State.CONTROL:
                         if event.key == pygame.K_SPACE:
-                            self.side = 'right' if self.side == 'left' else 'left'
+                            if not self.hand_control:
+                                self.side = 'right' if self.side == 'left' else 'left'
                         elif event.key == pygame.K_TAB:
                             self.hand_control = not self.hand_control
                         elif event.key == pygame.K_MINUS:

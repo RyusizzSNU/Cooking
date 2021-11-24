@@ -8,98 +8,92 @@ downscale_height: 400      # if the input image is larger than this, scale it do
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
-#    "pan_handle_handle":"package://dope/weights/train_ver3/pan_handle_handle.pth",
+    "pan_handle_handle":"package://dope/weights/train_ver3/pan_handle_handle.pth",
 #    "knife_holder":"package://dope/weights/train_ver2/knife_holder_60.pth",
 #    "carrot":"package://dope/weights/train_ver3/carrot.pth",
 #    "onion":"package://dope/weights/train_ver3/onion.pth",
 #    "potato":"package://dope/weights/train_ver3/potato.pth",
-#    "oil_bowl":"package://dope/weights/train_ver3/oil_bowl.pth",
+    "oil_bowl":"package://dope/weights/train_ver3/oil_bowl.pth",
 #    "rice_bowl":"package://dope/weights/train_ver4/rice_bowl.pth",
 #    "salt_bowl":"package://dope/weights/train_ver3/salt_bowl.pth",
-#   "board_handle":"package://dope/weights/train_ver3/board_handle.pth",
+    "board_handle":"package://dope/weights/train_ver3/board_handle.pth",
 #    "knife_handle":"package://dope/weights/train_ver4/knife_handle.pth",
-#    "switch":"package://dope/weights/train_ver4/switch.pth",
+    "switch":"package://dope/weights/train_ver4/switch.pth",
 #    "paddle_handle": "package://dope/weights/train_ver4/paddle_handle.pth",
     "spam": "package://dope/weights/train_ver5/spam.pth",
-    "cracker":"package://dope/weights/cracker_60.pth",
-    "gelatin":"package://dope/weights/gelatin_60.pth",
-    "meat":"package://dope/weights/meat_20.pth",
-    "soup":"package://dope/weights/soup_60.pth",
-    "sugar":"package://dope/weights/sugar_60.pth",
-    "popcorn" : "package://dope/weights/popcorn.pth",
-    "pepper_bowl" : "package://dope/weights/211026/pepper_bowl.pth"
+    "kettle_handle": "package://dope/weights/211026/kettle_handle.pth",
+    "pepper_bowl" : "package://dope/weights/211026/pepper_bowl.pth",
+#    "knife_handle":"package://dope/weights/211026/knife_handle.pth",
+    "knife_handle":"package://dope/weights/211026/knife_handle2.pth",
+    "ladle_handle":"package://dope/weights/211026/ladle_handle.pth",
+    "noodle":"package://dope/weights/211026/noodle.pth",
+    "ham":"package://dope/weights/211026/ham.pth",
 }
 
 # Cuboid dimension in cm x,y,z
 dimensions: {
-    "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
-    "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
-    "meat": [10.164673805236816,8.3542995452880859,5.7600898742675781],
-    #"mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
-    "soup": [6.7659378051757813,10.185500144958496,6.771425724029541],
-    "sugar": [9.267730712890625,17.625339508056641,4.5134143829345703],
     "pan_handle_handle": [ 300, 76, 166 ],
-    "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],
-    "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
+#    "carrot": [59.935501098632812, 119.87090301513672, 309.96578979492188],
+#    "onion": [ 80.02130126953125, 160.0426025390625, 196.81930541992188 ],
 #    "potato": [ 88.9281005859375, 178.0166015625, 260.002197265625 ],
-    "rice_bowl": [ 118.32160186767578, 364.16009521484375, 319.51541137695312 ],
-    "salt_bowl": [ 49.638698577880859, 101.38829803466797, 79.934799194335938 ],
+#    "rice_bowl": [ 118.32160186767578, 364.16009521484375, 319.51541137695312 ],
+#    "salt_bowl": [ 49.638698577880859, 101.38829803466797, 79.934799194335938 ],
     "oil_bowl": [ 139.64239501953125, 179.95370483398438, 119.37940216064453 ],
     "board_handle": [ 5, 11, 10 ],
-    "knife_handle": [ 4.1599998474121094, 11.439999580383301, 7.2800002098083496 ],
+#    "knife_handle": [ 4.1599998474121094, 11.439999580383301, 7.2800002098083496 ],
     "switch": [ 0.69999998807907104, 4.9983000755310059, 5 ],
-    "paddle_handle": [ 10.300000190734863, 7.7635998725891113, 7.9991002082824707 ],
+#    "paddle_handle": [ 10.300000190734863, 7.7635998725891113, 7.9991002082824707 ],
 #    "knife_holder": [ 340, 160, 300 ],
     "spam": [ 4.4000000953674316, 6.4566998481750488, 8 ],
+    "kettle_handle": [ 2.400000, 3.200000, 5.59999990 ],
     "pepper_bowl": [ 7.1303000450134277, 6.559999942779541, 9.559999942779541 ],
-    "popcorn" : [ 8.4976997375488281, 3.825200080871582, 12.649200439453125 ]
+#    "knife_handle": [ 15.44, 2.64, 5.28 ],
+    "knife_handle": [ 19.300, 3.300, 6.600 ],
+    "ladle_handle": [ 10.4, 2.64, 5.28 ],
+    "noodle": [ 10.5, 13, 13 ],
+    "ham": [ 3.937, 1.122, 1.4567 ],
 }
 
 class_ids: {
     "pan_handle_handle": 1,
-    "carrot": 2,
-    "onion": 3,
+#    "carrot": 2,
+#    "onion": 3,
 #    "potato": 4,
-    "rice_bowl": 4,
-    "salt_bowl": 5,
+#    "rice_bowl": 4,
+#    "salt_bowl": 5,
     "oil_bowl": 6,
     "board_handle": 7,
     "knife_handle": 8,
     "switch": 9,
-    "paddle_handle": 10,
+#    "paddle_handle": 10,
 #    "knife_holder": 2,
     "spam": 11,
-    "cracker": 12,
-    "gelatin": 13,
-    "meat": 14,
-    "pepper_bowl": 15,
-    "soup":16,
-    "sugar": 17,
-    "popcorn": 18
+    "kettle_handle": 12,
+    "pepper_bowl": 13,
+    "ladle_handle": 14,
+    "noodle": 15,
+    "ham": 16,
 }
 
 draw_colors: {
     "pan_handle_handle": [0, 104, 255],  # blue
-    "carrot": [255, 255, 255], # white
-    "onion": [217, 12, 232], # magenta
+#    "carrot": [255, 255, 255], # white
+#    "onion": [217, 12, 232], # magenta
 #    "potato": [255, 101, 0], # orange
-    "rice_bowl": [232, 222, 12], # yellow
-    "salt_bowl": [0, 0, 0], # black
+#    "rice_bowl": [232, 222, 12], # yellow
+#    "salt_bowl": [0, 0, 0], # black
     "oil_bowl":  [255, 0, 0], # red
     "board_handle": [0, 255, 0], # green
     "knife_handle": [128, 128, 0], # olive
     "switch": [0, 255, 255], # cyan
-    "paddle_handle": [128, 128, 128], # gray
+#    "paddle_handle": [128, 128, 128], # gray
 #    "knife_holder": [13, 255, 128], # green
     "spam": [255, 101, 0], # orange
-    "cracker": [255, 110, 150],
-    "gelatin": [255, 150, 110],
-    "meat": [255, 110, 150],
+    "kettle_handle": [255,0,255],
     "pepper_bowl": [0, 104, 255], # sky
-    #"mustard": 15,
-    "soup":[255, 110, 150],
-    "sugar": [255, 110, 150],
-    "popcorn": [0,0,0]
+    "ladle_handle": [0, 0, 255], # blue
+    "noodle": [128, 0, 255],
+    "ham": [255, 0, 128],
 }
 
 # optional: provide a transform that is applied to the pose returned by DOPE
@@ -127,25 +121,22 @@ meshes: {
 mesh_scales: {
     "pan_handle_handle": 0.01,
 #    "knife_holder": 0.01,
-    "carrot": 0.01,
-    "onion": 0.01,
+#    "carrot": 0.01,
+#    "onion": 0.01,
 #    "potato": 0.01,
-    "rice_bowl": 0.01,
-    "salt_bowl": 0.01,
+#    "rice_bowl": 0.01,
+#    "salt_bowl": 0.01,
     "oil_bowl":  0.01,
     "board_handle": 0.01,
     "knife_handle": 0.01,
     "switch": 0.01,
-    "paddle_handle": 0.01,
+#    "paddle_handle": 0.01,
     "spam": 0.01,
-    "cracker": 0.01,
-    "gelatin": 0.01,
-    "meat": 0.01,
-    "soup": 0.01,
-    "sugar": 0.01,
+    "kettle_handle": 0.01,
     "pepper_bowl": 0.01,
-    "popcorn":0.01
-
+    "ladle_handle": 0.01,
+    "noodle": 0.01,
+    "ham": 0.01,
 }
 
 # Config params for DOPE
@@ -155,43 +146,30 @@ sigma: 3
 thresh_points: 0.03
 
 activities: {
-    "L":{  
+    "L": {
         "pan_handle_handle": False,
-        "carrot": False,
-        "onion": False,
         "oil_bowl": False,
-        "rice_bowl": False,
-        "salt_bowl": False,
         "board_handle": False,
         "knife_handle": False,
         "switch": False,
-        "paddle_handle": False,
         "spam": False,
-        "cracker": False,
-        "gelatin": False,
-        "meat": False,
-        "soup": False,
-        "sugar": False,
+        "kettle_handle": False,
         "pepper_bowl": False,
-        "popcorn" : False
+        "ladle_handle": False,
+        "noodle": False,
+        "ham": False,
     },
-    "R":{  
+    "R": {
         "pan_handle_handle": False,
-        "carrot": False,
-        "onion": False,
         "oil_bowl": False,
-        "rice_bowl": False,
-        "salt_bowl": False,
         "board_handle": False,
         "knife_handle": False,
         "switch": False,
-        "paddle_handle": False,
         "spam": False,
-        "cracker": False,
-        "gelatin": False,
-        "meat": False,
-        "soup": False,
-        "sugar": False,
-        "popcorn" : False
-    },
+        "kettle_handle": False,
+        "pepper_bowl": False,
+        "ladle_handle": False,
+        "noodle": False,
+        "ham": False,
+    }
 }

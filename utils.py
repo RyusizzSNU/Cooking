@@ -50,6 +50,6 @@ def transform(T, position=None, direction=None, scipy_R=None, dcm=None, affine=N
     if scipy_R is not None:
         return np.matmul(T[:3, :3], scipy_R.as_dcm())
     if dcm is not None:
-        return np.matmul(T[:3, :3], dcm)
+        return np.matmul(T[:3, :3], dcm[:3, :3])
     if affine is not None:
         return np.matmul(T, affine)
